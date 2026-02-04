@@ -7,165 +7,398 @@
 
   <style>
     :root{
-      --bg:#fff7fb;
-      --panel:#ffe6f1;
-      --border:#f2a9c7;
-      --text:#a13f6a;
+      --bg1:#fff7fb;
+      --bg2:#ffe6f1;
+      --panel:#ffffff;
+      --pink:#f2a9c7;
+      --pink2:#ffd1e6;
+      --text:#7b2e4f;
       --shadow:rgba(242,169,199,.25);
+      --ink:rgba(20,20,20,.85);
     }
+
+    *{box-sizing:border-box}
     body{
       margin:0;
-      background:transparent;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-    }
-    .dmWindow{
-      max-width:520px;
-      margin:0 auto;
-      border-radius:22px;
-      border:2px solid var(--border);
-      background:var(--bg);
-      box-shadow:0 8px 20px var(--shadow);
-      overflow:hidden;
-    }
-    .dmTop{
-      display:flex;
-      align-items:center;
-      gap:.5rem;
-      padding:.75rem 1rem;
-      background:var(--panel);
-      border-bottom:2px solid var(--border);
-    }
-    .dmIcon{
-      width:26px;height:26px;
-      border-radius:9px;
-      border:2px solid var(--border);
-      background:#fff;
-    }
-    .dmTitle{
-      margin-left:auto;
-      font-weight:700;
-      letter-spacing:.06em;
-      color:#d46897;
-    }
-    .dmBody{
-      padding:1rem;
-      min-height:190px;
-      display:flex;
-      flex-direction:column;
-      gap:.75rem;
-    }
-    .divider{
+      min-height:100vh;
       display:flex;
       align-items:center;
       justify-content:center;
-      gap:.6rem;
-      opacity:.9;
-    }
-    .divider span{
-      height:2px;
-      width:42%;
-      background:rgba(242,169,199,.7);
-      border-radius:999px;
-    }
-    .diamond{
-      width:10px;height:10px;
-      background:rgba(242,169,199,.7);
-      transform:rotate(45deg);
-      border-radius:2px;
-    }
-    .bubble{
-      max-width:85%;
-      align-self:flex-end;
-      padding:.8rem .95rem;
-      border-radius:18px;
-      border:2px solid var(--border);
-      background:var(--panel);
+      font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color:var(--text);
-      line-height:1.55;
-      min-height:3.6em;
+      background:
+        linear-gradient(0deg, rgba(255,255,255,.65), rgba(255,255,255,.65)),
+        linear-gradient(90deg, rgba(242,169,199,.18) 1px, transparent 1px),
+        linear-gradient(rgba(242,169,199,.18) 1px, transparent 1px);
+      background-size: auto, 26px 26px, 26px 26px;
+      background-color: var(--bg1);
+      padding:24px;
+    }
+
+    .frame{
+      width:min(520px, 92vw);
+    }
+
+    .card{
+      border:2px solid var(--pink);
+      border-radius:26px;
+      background:linear-gradient(180deg, var(--bg2), var(--bg1));
+      box-shadow:0 12px 28px var(--shadow);
+      overflow:hidden;
+    }
+
+    /* ---------- PASSCODE SCREEN ---------- */
+    .lockTop{
+      padding:18px 18px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:center;
+      text-align:center;
+    }
+
+    .lockArt{
+      width:220px;
+      aspect-ratio: 16/10;
+      border-radius:14px;
+      border:2px solid rgba(0,0,0,.25);
+      background:
+        radial-gradient(circle at 30% 35%, rgba(255,255,255,.9), transparent 55%),
+        radial-gradient(circle at 70% 60%, rgba(255,255,255,.75), transparent 55%),
+        linear-gradient(135deg, rgba(242,169,199,.55), rgba(255,230,241,.45));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:800;
+      letter-spacing:.06em;
+      color:rgba(0,0,0,.35);
+    }
+
+    .stars{
+      display:flex;
+      gap:10px;
+      margin-top:2px;
+    }
+    .star{
+      width:22px;height:22px;
+      border-radius:7px;
+      border:2px solid rgba(0,0,0,.18);
+      background:rgba(242,169,199,.35);
+      box-shadow:0 6px 14px rgba(0,0,0,.06);
+      transform: rotate(45deg);
+    }
+    .star:nth-child(2){ background: rgba(173,216,230,.45); }
+    .star:nth-child(3){ background: rgba(200,200,255,.45); }
+
+    .lockTitle{
+      font-weight:800;
+      letter-spacing:.03em;
+      margin-top:6px;
+      color:rgba(0,0,0,.8);
+    }
+    .hint{
+      font-size:13px;
+      opacity:.75;
+      margin-top:2px;
+    }
+
+    .codeDots{
+      display:flex;
+      gap:10px;
+      padding:10px 0 4px;
+      justify-content:center;
+    }
+    .dot{
+      width:14px;height:14px;
+      border-radius:999px;
+      border:2px solid rgba(0,0,0,.22);
+      background: rgba(255,255,255,.75);
+    }
+    .dot.filled{
+      background: rgba(242,169,199,.8);
+    }
+
+    .pad{
+      padding:10px 18px 20px;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
+      justify-items:stretch;
+    }
+    .key{
+      border:2px solid rgba(0,0,0,.22);
+      border-radius:12px;
+      background: rgba(242,169,199,.65);
+      color:rgba(255,255,255,.95);
+      font-weight:900;
+      font-size:20px;
+      padding:14px 0;
+      box-shadow:0 10px 0 rgba(0,0,0,.08);
+      cursor:pointer;
+      user-select:none;
+    }
+    .key:active{ transform: translateY(2px); box-shadow:0 8px 0 rgba(0,0,0,.08); }
+    .key.alt{
+      background: rgba(255,255,255,.55);
+      color: rgba(0,0,0,.75);
+      font-size:14px;
+      font-weight:800;
+    }
+    .pad .spacer{ visibility:hidden; }
+
+    .error{
+      text-align:center;
+      font-size:13px;
+      color:#9b2b44;
+      min-height:18px;
+      padding-bottom:6px;
+      opacity:.95;
+    }
+
+    /* ---------- MESSAGE POPUP (like image 2) ---------- */
+    .appTop{
+      padding:14px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-bottom:2px solid rgba(242,169,199,.55);
+      background: rgba(255,255,255,.35);
+    }
+    .pillIcons{
+      display:flex; gap:8px;
+    }
+    .pill{
+      width:30px;height:16px;border-radius:999px;
+      border:2px solid rgba(0,0,0,.18);
+      background: rgba(255,255,255,.65);
+    }
+    .appTitle{
+      font-weight:900;
+      letter-spacing:.08em;
+      color:rgba(0,0,0,.7);
+      font-size:12px;
+      text-transform:uppercase;
+    }
+
+    .popupWrap{
+      padding:22px 16px 18px;
+      display:flex;
+      justify-content:center;
+    }
+
+    .popup{
+      width:min(470px, 100%);
+      border-radius:22px;
+      border:2px solid rgba(0,0,0,.20);
+      background: #fff;
+      box-shadow: 16px 16px 0 rgba(242,169,199,.55);
+      overflow:hidden;
+    }
+
+    .popupHeader{
+      background: rgba(242,169,199,.55);
+      padding:18px 16px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+    }
+
+    .avatar{
+      position:absolute;
+      top:-18px;
+      width:56px;height:56px;
+      border-radius:999px;
+      border:2px solid rgba(0,0,0,.20);
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.9), rgba(255,255,255,.2)),
+        linear-gradient(135deg, rgba(242,169,199,.9), rgba(200,200,255,.55));
+      box-shadow:0 10px 18px rgba(0,0,0,.08);
+    }
+
+    .popupHeader h2{
+      margin:0;
+      font-size:22px;
+      letter-spacing:.02em;
+      color:rgba(0,0,0,.82);
+    }
+
+    .popupBody{
+      padding:22px 18px;
+      background:#fff;
+      color:rgba(0,0,0,.82);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:15px;
+      line-height:1.7;
+      min-height:140px;
       white-space:pre-wrap;
     }
-    .bubble.typing:after{
+
+    .typing:after{
       content:"";
       display:inline-block;
-      width:10px;
-      height:1.05em;
+      width:10px;height:1.05em;
       margin-left:6px;
-      background:rgba(161,63,106,.55);
+      background:rgba(0,0,0,.35);
       border-radius:3px;
       animation:blink .9s steps(1) infinite;
       transform:translateY(2px);
     }
     @keyframes blink{50%{opacity:0}}
-    .dots{
-      display:flex;
-      justify-content:center;
-      gap:.45rem;
-      opacity:.7;
+
+    .popupFooter{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      border-top:2px solid rgba(0,0,0,.12);
+      background: rgba(255,255,255,.85);
     }
-    .dots i{
-      width:6px;height:6px;
-      border-radius:999px;
-      background:rgba(242,169,199,.7);
-      display:block;
-    }
-    .line{
-      height:2px;
-      background:rgba(242,169,199,.75);
-    }
-    .btnRow{
-      padding:1rem;
-      display:flex;
-      gap:.75rem;
-      justify-content:center;
-      flex-wrap:wrap;
-      background:var(--bg);
-    }
-    button{
-      padding:.6rem 1.25rem;
-      border-radius:999px;
-      border:2px solid var(--border);
-      background:var(--panel);
-      color:var(--text);
-      font:inherit;
+
+    .footBtn{
+      padding:14px 12px;
+      background: transparent;
+      border:0;
       cursor:pointer;
-      box-shadow:0 4px 10px rgba(242,169,199,.18);
+      font-weight:900;
+      letter-spacing:.02em;
+      color:rgba(0,0,0,.75);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:10px;
     }
-    button:hover{background:#ffd1e6}
+    .footBtn + .footBtn{
+      border-left:2px solid rgba(0,0,0,.10);
+    }
+
+    .miniTag{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      border:2px solid rgba(0,0,0,.15);
+      background: rgba(242,169,199,.30);
+      font-size:12px;
+      font-weight:900;
+      color:rgba(0,0,0,.75);
+    }
+
+    .rowBtns{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+      padding:0 16px 18px;
+    }
+    .chip{
+      border:2px solid rgba(0,0,0,.18);
+      border-radius:999px;
+      background: rgba(255,230,241,.85);
+      padding:10px 14px;
+      font-weight:900;
+      cursor:pointer;
+      color:rgba(0,0,0,.75);
+      box-shadow:0 10px 0 rgba(0,0,0,.06);
+    }
+    .chip:active{ transform: translateY(2px); box-shadow:0 8px 0 rgba(0,0,0,.06); }
+
+    .hidden{ display:none !important; }
+
+    .note{
+      text-align:center;
+      font-size:12px;
+      opacity:.6;
+      margin-top:10px;
+    }
   </style>
 </head>
 
 <body>
-  <div class="dmWindow">
-    <div class="dmTop">
-      <div class="dmIcon"></div>
-      <div class="dmIcon"></div>
-      <div class="dmIcon"></div>
-      <div class="dmTitle">Inbox</div>
-    </div>
+  <div class="frame">
 
-    <div class="dmBody">
-      <div class="divider">
-        <span></span><div class="diamond"></div><span></span>
+    <!-- LOCK SCREEN -->
+    <div class="card" id="lockScreen">
+      <div class="lockTop">
+        <div class="lockArt">ENTER</div>
+        <div class="stars" aria-hidden="true">
+          <div class="star"></div><div class="star"></div><div class="star"></div>
+        </div>
+
+        <div class="lockTitle">Enter Passcode</div>
+        <div class="hint" id="hintText"></div>
+
+        <div class="codeDots" aria-label="Passcode length">
+          <div class="dot" id="d0"></div>
+          <div class="dot" id="d1"></div>
+          <div class="dot" id="d2"></div>
+          <div class="dot" id="d3"></div>
+        </div>
+
+        <div class="error" id="err"></div>
       </div>
 
-      <div class="bubble" id="msg"></div>
-
-      <div class="dots">
-        <i></i><i></i><i></i>
+      <div class="pad" aria-label="Keypad">
+        <button class="key" data-k="1">1</button>
+        <button class="key" data-k="2">2</button>
+        <button class="key" data-k="3">3</button>
+        <button class="key" data-k="4">4</button>
+        <button class="key" data-k="5">5</button>
+        <button class="key" data-k="6">6</button>
+        <button class="key" data-k="7">7</button>
+        <button class="key" data-k="8">8</button>
+        <button class="key" data-k="9">9</button>
+        <div class="spacer">.</div>
+        <button class="key" data-k="0">0</button>
+        <button class="key alt" data-k="del">Delete</button>
       </div>
     </div>
 
-    <div class="line"></div>
+    <!-- APP SCREEN -->
+    <div class="card hidden" id="appScreen">
+      <div class="appTop">
+        <div class="pillIcons" aria-hidden="true">
+          <div class="pill"></div><div class="pill"></div><div class="pill"></div>
+        </div>
+        <div class="appTitle">Messages</div>
+        <div style="width:68px"></div>
+      </div>
 
-    <div class="btnRow">
-      <button data-set="reassurance">Reassurance</button>
-      <button data-set="whatilove">What I Love</button>
-      <button data-set="sweet">Sweet</button>
+      <div class="popupWrap">
+        <div class="popup" role="dialog" aria-label="Reminder popup">
+          <div class="popupHeader">
+            <div class="avatar" aria-hidden="true"></div>
+            <h2 id="popupTitle">Reminder</h2>
+          </div>
+
+          <div class="popupBody" id="msg"></div>
+
+          <div class="popupFooter">
+            <button class="footBtn" id="btnOkay" type="button">
+              <span class="miniTag">Okay</span>
+            </button>
+            <button class="footBtn" id="btnGreat" type="button">
+              <span class="miniTag">Great</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="rowBtns">
+        <button class="chip" data-set="reassurance">Reassurance</button>
+        <button class="chip" data-set="whatilove">What I Love</button>
+        <button class="chip" data-set="sweet">Sweet</button>
+      </div>
+
+      <div class="note">Tip: “Okay” shows another message. “Great” switches category.</div>
     </div>
+
   </div>
 
   <script>
+    // ----------------- EDIT THESE -----------------
+    const PASSCODE = "1234"; // <-- change this
+    const HINT = "Hint: the day you reach me up"; // <-- change this
+    const REMEMBER_UNLOCK = true; // remembers on that device
+    // ------------------------------------------------
+
     const sets = {
       reassurance: [
         "You are safe with me.",
@@ -186,5 +419,116 @@
         "You are my favorite person.",
         "I like being yours.",
         "You make my days softer.",
-        "
+        "I am really glad I get to love you."
+      ]
+    };
 
+    const lockScreen = document.getElementById("lockScreen");
+    const appScreen  = document.getElementById("appScreen");
+    const hintText   = document.getElementById("hintText");
+    const err        = document.getElementById("err");
+    const msgEl      = document.getElementById("msg");
+    const popupTitle = document.getElementById("popupTitle");
+
+    hintText.textContent = HINT;
+
+    let entered = "";
+    let timer = null;
+    let currentSet = "sweet";
+
+    function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+    function setDots(){
+      for (let i=0;i<4;i++){
+        document.getElementById("d"+i).classList.toggle("filled", i < entered.length);
+      }
+    }
+
+    function unlock(){
+      lockScreen.classList.add("hidden");
+      appScreen.classList.remove("hidden");
+      if (REMEMBER_UNLOCK) localStorage.setItem("dmUnlocked","1");
+      showMessage(currentSet);
+    }
+
+    function resetEntry(){
+      entered = "";
+      setDots();
+    }
+
+    function fail(){
+      err.textContent = "Incorrect code.";
+      resetEntry();
+      setTimeout(()=>{ err.textContent = ""; }, 1200);
+    }
+
+    function typeOut(text, speed=18){
+      if (timer) clearInterval(timer);
+      msgEl.classList.add("typing");
+      msgEl.textContent = "";
+      let i = 0;
+      timer = setInterval(()=>{
+        msgEl.textContent += text.charAt(i++);
+        if (i >= text.length){
+          clearInterval(timer);
+          timer = null;
+          msgEl.classList.remove("typing");
+        }
+      }, speed);
+    }
+
+    function showMessage(setName){
+      currentSet = setName;
+      popupTitle.textContent = "Reminder";
+      typeOut(pick(sets[setName]), 18);
+    }
+
+    // Remember unlock (optional)
+    if (REMEMBER_UNLOCK && localStorage.getItem("dmUnlocked") === "1") {
+      unlock();
+    }
+
+    // Keypad
+    document.addEventListener("click", (e)=>{
+      const key = e.target.closest("[data-k]");
+      if (!key) return;
+
+      const k = key.getAttribute("data-k");
+      if (k === "del") {
+        entered = entered.slice(0, -1);
+        setDots();
+        return;
+      }
+
+      if (entered.length >= 4) return;
+      entered += k;
+      setDots();
+
+      if (entered.length === 4) {
+        if (entered === PASSCODE) unlock();
+        else fail();
+      }
+    });
+
+    // Popup buttons behavior
+    document.getElementById("btnOkay").addEventListener("click", ()=>{
+      showMessage(currentSet);
+    });
+
+    document.getElementById("btnGreat").addEventListener("click", ()=>{
+      // rotate categories for a “surprise” feel
+      const order = ["reassurance","whatilove","sweet"];
+      const idx = order.indexOf(currentSet);
+      const next = order[(idx + 1) % order.length];
+      showMessage(next);
+    });
+
+    // Category chips
+    document.addEventListener("click", (e)=>{
+      const chip = e.target.closest(".chip[data-set]");
+      if (!chip) return;
+      showMessage(chip.getAttribute("data-set"));
+    });
+  </script>
+</body>
+</html>

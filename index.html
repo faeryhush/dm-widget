@@ -1,405 +1,190 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Reminder</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New Message</title>
 
-  <!-- Pixel font -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-  <style>
-    :root{
-      --pink:#f2a9c7;
-      --pink2:#ffd1e6;
-      --panel:#ffffff;
-      --ink:rgba(25,25,25,.85);
-      --line:rgba(0,0,0,.18);
-      --shadow:rgba(0,0,0,.10);
-    }
+<style>
+:root{
+  --pink:#f2a9c7;
+  --bgpink:rgba(242,169,199,.45);
+  --line:rgba(0,0,0,.18);
+  --shadow:rgba(0,0,0,.12);
+}
 
-    *{box-sizing:border-box}
+*{box-sizing:border-box}
 
-    body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:28px;
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:24px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--bgpink) 0px,
+      var(--bgpink) 22px,
+      #fff 22px,
+      #fff 48px
+    );
+}
 
-      /* vertical pink stripes like your image */
-      background:
-        repeating-linear-gradient(
-          90deg,
-          rgba(242,169,199,.45) 0px,
-          rgba(242,169,199,.45) 22px,
-          rgba(255,255,255,1) 22px,
-          rgba(255,255,255,1) 48px
-        );
-    }
+.wrap{width:420px; max-width:95vw}
 
-    .wrap{
-      width:min(520px, 92vw);
-    }
+/* ---------- LOCK ---------- */
+.lock{
+  background:#fff;
+  border:2px solid var(--line);
+  border-radius:20px;
+  box-shadow:0 16px 36px var(--shadow);
+  overflow:hidden;
+}
 
-    /* ---------- LOCK SCREEN ---------- */
-    .lock{
-      border-radius:22px;
-      border:2px solid var(--line);
-      background: rgba(255,255,255,.92);
-      box-shadow: 0 18px 40px var(--shadow);
-      overflow:hidden;
-    }
+.lockTop{
+  padding:18px 16px 8px;
+  text-align:center;
+  font-family:'Press Start 2P', monospace;
+}
 
-    .lockTop{
-      padding:18px 18px 10px;
-      text-align:center;
-    }
+.lockTop h1{
+  font-size:14px;
+  margin:6px 0 10px;
+}
 
-    .lockTitle{
-      font-family:"Press Start 2P", system-ui, sans-serif;
-      font-size:14px;
-      line-height:1.35;
-      color:var(--ink);
-      margin:8px 0 10px;
-      text-transform:uppercase;
-      letter-spacing:.02em;
-    }
+.lockTop p{
+  font-size:10px;
+  opacity:.7;
+  margin-bottom:10px;
+}
 
-    .hint{
-      font-family:"Press Start 2P", system-ui, sans-serif;
-      font-size:10px;
-      line-height:1.6;
-      opacity:.75;
-      margin:0 auto 14px;
-      max-width:360px;
-    }
+.dots{
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  margin-bottom:8px;
+}
 
-    .dots{
-      display:flex;
-      gap:8px;
-      justify-content:center;
-      padding:10px 0 6px;
-      flex-wrap:wrap;
-    }
+.dot{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  border:2px solid var(--line);
+}
 
-    .dot{
-      width:12px;height:12px;
-      border-radius:999px;
-      border:2px solid rgba(0,0,0,.22);
-      background: rgba(255,255,255,.95);
-    }
-    .dot.filled{
-      background: rgba(242,169,199,.85);
-    }
+.dot.filled{background:var(--pink)}
 
-    .err{
-      min-height:18px;
-      font-family:"Press Start 2P", system-ui, sans-serif;
-      font-size:10px;
-      line-height:1.6;
-      color:#9b2b44;
-      padding:6px 0 2px;
-    }
+.err{
+  height:16px;
+  font-size:9px;
+  color:#a33;
+}
 
-    .pad{
-      padding:14px 16px 18px;
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:12px;
-    }
+/* keypad */
+.pad{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  padding:14px;
+}
 
-    .key{
-      border:2px solid rgba(0,0,0,.22);
-      border-radius:12px;
-      background: rgba(242,169,199,.72);
-      color:#fff;
-      font-family:"Press Start 2P", system-ui, sans-serif;
-      font-size:14px;
-      padding:14px 0;
-      cursor:pointer;
-      box-shadow: 0 10px 0 rgba(0,0,0,.06);
-      user-select:none;
-    }
-    .key:active{ transform: translateY(2px); box-shadow: 0 8px 0 rgba(0,0,0,.06); }
+.key{
+  padding:14px 0;
+  font-family:'Press Start 2P', monospace;
+  font-size:14px;
+  border-radius:12px;
+  border:2px solid var(--line);
+  background:var(--pink);
+  color:#fff;
+}
 
-    .key.alt{
-      background: rgba(255,255,255,.75);
-      color: rgba(0,0,0,.75);
-      font-size:10px;
-    }
+.key.alt{
+  background:#f7f7f7;
+  color:#333;
+  font-size:9px;
+}
 
-    .spacer{ visibility:hidden; }
+.spacer{visibility:hidden}
 
-    /* ---------- POPUP ---------- */
-    .popup{
-      border-radius:22px;
-      border:2px solid var(--line);
-      background: rgba(255,255,255,.95);
-      box-shadow: 18px 18px 0 rgba(242,169,199,.55);
-      overflow:hidden;
-    }
+/* ---------- POPUP ---------- */
+.popup{
+  background:#fff;
+  border-radius:20px;
+  border:2px solid var(--line);
+  box-shadow:14px 14px 0 rgba(242,169,199,.55);
+  overflow:hidden;
+}
 
-    .popupHeader{
-      background: rgba(242,169,199,.55);
-      padding:18px 16px 14px;
-      text-align:center;
-    }
+.popupHeader{
+  background:rgba(242,169,199,.55);
+  padding:14px;
+  text-align:center;
+  font-family:'Press Start 2P', monospace;
+  font-size:14px;
+}
 
-    .popupHeader h2{
-      margin:0;
-      font-family:"Press Start 2P", system-ui, sans-serif;
-      font-size:16px;
-      line-height:1.35;
-      color:rgba(0,0,0,.82);
-      text-transform:uppercase;
-      letter-spacing:.02em;
-    }
+.popupBody{
+  padding:18px 16px;
+  min-height:120px;
+  font-family:'Press Start 2P', monospace;
+  font-size:10px;
+  line-height:2;
+}
 
-    .popupBody{
-      padding:22px 18px;
-      background:#fff;
-      color:rgba(0,0,0,.82);
+.typing::after{
+  content:"";
+  display:inline-block;
+  width:8px;
+  height:1em;
+  background:#999;
+  margin-left:6px;
+  animation:blink .9s steps(1) infinite;
+}
 
-      /* more pixelated feel */
-      font-family:"Press Start 2P", system-ui, sans-serif;
-      font-size:11px;
-      line-height:2.0;
+@keyframes blink{50%{opacity:0}}
 
-      min-height:160px;
-      white-space:pre-wrap;
-    }
+.popupFooter{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  border-top:2px solid var(--line);
+}
 
-    .typing:after{
-      content:"";
-      display:inline-block;
-      width:10px;height:1.05em;
-      margin-left:6px;
-      background:rgba(0,0,0,.35);
-      border-radius:2px;
-      animation:blink .9s steps(1) infinite;
-      transform:translateY(2px);
-    }
-    @keyframes blink{50%{opacity:0}}
+.popupFooter button{
+  padding:12px 6px;
+  background:none;
+  border:none;
+}
 
-    .popupFooter{
-      display:grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      border-top:2px solid rgba(0,0,0,.12);
-      background: rgba(255,255,255,.88);
-    }
+.popupFooter button+button{
+  border-left:2px solid var(--line);
+}
 
-    .footBtn{
-      padding:14px 10px;
-      background: transparent;
-      border:0;
-      cursor:pointer;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-    }
-    .footBtn + .footBtn{
-      border-left:2px solid rgba(0,0,0,.10);
-    }
+.tag{
+  font-family:'Press Start 2P', monospace;
+  font-size:8px;
+  padding:6px 8px;
+  border-radius:999px;
+  border:2px solid var(--line);
+  background:rgba(242,169,199,.3);
+}
 
-    .tag{
-      display:inline-block;
-      padding:8px 10px;
-      border-radius:999px;
-      border:2px solid rgba(0,0,0,.15);
-      background: rgba(242,169,199,.28);
-
-      font-family:"Press Start 2P", system-ui, sans-serif;
-      font-size:9px;
-      line-height:1.6;
-      color:rgba(0,0,0,.75);
-      text-transform:uppercase;
-      text-align:center;
-    }
-
-    .hidden{ display:none !important; }
-  </style>
+.hidden{display:none}
+</style>
 </head>
 
 <body>
-  <div class="wrap">
+<div class="wrap">
 
-    <!-- LOCK -->
-    <section class="lock" id="lockScreen">
-      <div class="lockTop">
-        <div class="lockTitle">Enter Passcode</div>
-        <div class="hint" id="hintText">Hint: the day you reach me up</div>
-
-        <div class="dots" id="dots" aria-label="Passcode digits"></div>
-        <div class="err" id="err"></div>
-      </div>
-
-      <div class="pad" aria-label="Keypad">
-        <button class="key" data-k="1">1</button>
-        <button class="key" data-k="2">2</button>
-        <button class="key" data-k="3">3</button>
-        <button class="key" data-k="4">4</button>
-        <button class="key" data-k="5">5</button>
-        <button class="key" data-k="6">6</button>
-        <button class="key" data-k="7">7</button>
-        <button class="key" data-k="8">8</button>
-        <button class="key" data-k="9">9</button>
-        <div class="spacer">.</div>
-        <button class="key" data-k="0">0</button>
-        <button class="key alt" data-k="del">Delete</button>
-      </div>
-    </section>
-
-    <!-- POPUP -->
-    <section class="popup hidden" id="popupScreen" role="dialog" aria-label="Reminder">
-      <div class="popupHeader">
-        <h2 id="popupTitle">Reminder</h2>
-      </div>
-
-      <div class="popupBody" id="msg"></div>
-
-      <div class="popupFooter">
-        <button class="footBtn pick" data-set="reassurance" type="button">
-          <span class="tag">Reassurance</span>
-        </button>
-        <button class="footBtn pick" data-set="whatilove" type="button">
-          <span class="tag">What I Love</span>
-        </button>
-        <button class="footBtn pick" data-set="sweet" type="button">
-          <span class="tag">Something Sweet</span>
-        </button>
-      </div>
-    </section>
-
+<section class="lock" id="lock">
+  <div class="lockTop">
+    <h1>Enter Passcode</h1>
+    <p>the day we met</p>
+    <div class="dots" id="dots"></div>
+    <div class="err" id="err"></div>
   </div>
 
-  <script>
-    // PASSCODE: July 24, 2024 (MMDDYYYY)
-    const PASSCODE = "07242024";
-
-    // Always show lock on launch:
-    // (We do NOT store unlock state anywhere.)
-
-    const sets = {
-      reassurance: [
-        "You are safe with me.",
-        "You do not have to carry everything alone.",
-        "It is okay to rest. I am not going anywhere.",
-        "You are doing better than you think.",
-        "I see you, even when you feel invisible."
-      ],
-      whatilove: [
-        "I love how thoughtful you are.",
-        "I love the way your mind works.",
-        "I love your patience.",
-        "I love how deeply you care.",
-        "I love how you keep trying."
-      ],
-      sweet: [
-        "Come here. I owe you a hug.",
-        "You are my favorite person.",
-        "I like being yours.",
-        "You make my days softer.",
-        "I am really glad I get to love you."
-      ]
-    };
-
-    const lockScreen = document.getElementById("lockScreen");
-    const popupScreen = document.getElementById("popupScreen");
-    const msgEl = document.getElementById("msg");
-    const err = document.getElementById("err");
-    const dotsWrap = document.getElementById("dots");
-
-    let entered = "";
-    let currentSet = "sweet";
-    let timer = null;
-
-    // Build dots to match passcode length (8 digits)
-    const LEN = PASSCODE.length;
-    for (let i = 0; i < LEN; i++){
-      const d = document.createElement("div");
-      d.className = "dot";
-      d.id = "d" + i;
-      dotsWrap.appendChild(d);
-    }
-
-    function setDots(){
-      for (let i = 0; i < LEN; i++){
-        const el = document.getElementById("d" + i);
-        el.classList.toggle("filled", i < entered.length);
-      }
-    }
-
-    function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-
-    function typeOut(text, speed=18){
-      if (timer) clearInterval(timer);
-      msgEl.classList.add("typing");
-      msgEl.textContent = "";
-      let i = 0;
-      timer = setInterval(()=>{
-        msgEl.textContent += text.charAt(i++);
-        if (i >= text.length){
-          clearInterval(timer);
-          timer = null;
-          msgEl.classList.remove("typing");
-        }
-      }, speed);
-    }
-
-    function showMessage(setName){
-      currentSet = setName;
-      typeOut(pick(sets[setName]), 18);
-    }
-
-    function unlock(){
-      lockScreen.classList.add("hidden");
-      popupScreen.classList.remove("hidden");
-      showMessage(currentSet);
-    }
-
-    function fail(){
-      err.textContent = "Incorrect code.";
-      entered = "";
-      setDots();
-      setTimeout(()=>{ err.textContent = ""; }, 1200);
-    }
-
-    // Keypad input
-    document.addEventListener("click", (e)=>{
-      const key = e.target.closest("[data-k]");
-      if (!key) return;
-
-      const k = key.getAttribute("data-k");
-
-      if (k === "del") {
-        entered = entered.slice(0, -1);
-        setDots();
-        return;
-      }
-
-      if (entered.length >= LEN) return;
-      entered += k;
-      setDots();
-
-      if (entered.length === LEN) {
-        if (entered === PASSCODE) unlock();
-        else fail();
-      }
-    });
-
-    // Footer buttons pick category
-    document.addEventListener("click", (e)=>{
-      const pickBtn = e.target.closest(".pick[data-set]");
-      if (!pickBtn) return;
-      showMessage(pickBtn.getAttribute("data-set"));
-    });
-
-    // Initialize dots
-    setDots();
-  </script>
-</body>
-</html>
+  <div

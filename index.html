@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Inbox</title>
+
+  <style>
+    :root{
+      --bg:#fff7fb;
+      --panel:#ffe6f1;
+      --border:#f2a9c7;
+      --text:#a13f6a;
+      --shadow:rgba(242,169,199,.25);
+    }
+    body{
+      margin:0;
+      background:transparent;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    .dmWindow{
+      max-width:520px;
+      margin:0 auto;
+      border-radius:22px;
+      border:2px solid var(--border);
+      background:var(--bg);
+      box-shadow:0 8px 20px var(--shadow);
+      overflow:hidden;
+    }
+    .dmTop{
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+      padding:.75rem 1rem;
+      background:var(--panel);
+      border-bottom:2px solid var(--border);
+    }
+    .dmIcon{
+      width:26px;height:26px;
+      border-radius:9px;
+      border:2px solid var(--border);
+      background:#fff;
+    }
+    .dmTitle{
+      margin-left:auto;
+      font-weight:700;
+      letter-spacing:.06em;
+      color:#d46897;
+    }
+    .dmBody{
+      padding:1rem;
+      min-height:190px;
+      display:flex;
+      flex-direction:column;
+      gap:.75rem;
+    }
+    .divider{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:.6rem;
+      opacity:.9;
+    }
+    .divider span{
+      height:2px;
+      width:42%;
+      background:rgba(242,169,199,.7);
+      border-radius:999px;
+    }
+    .diamond{
+      width:10px;height:10px;
+      background:rgba(242,169,199,.7);
+      transform:rotate(45deg);
+      border-radius:2px;
+    }
+    .bubble{
+      max-width:85%;
+      align-self:flex-end;
+      padding:.8rem .95rem;
+      border-radius:18px;
+      border:2px solid var(--border);
+      background:var(--panel);
+      color:var(--text);
+      line-height:1.55;
+      min-height:3.6em;
+      white-space:pre-wrap;
+    }
+    .bubble.typing:after{
+      content:"";
+      display:inline-block;
+      width:10px;
+      height:1.05em;
+      margin-left:6px;
+      background:rgba(161,63,106,.55);
+      border-radius:3px;
+      animation:blink .9s steps(1) infinite;
+      transform:translateY(2px);
+    }
+    @keyframes blink{50%{opacity:0}}
+    .dots{
+      display:flex;
+      justify-content:center;
+      gap:.45rem;
+      opacity:.7;
+    }
+    .dots i{
+      width:6px;height:6px;
+      border-radius:999px;
+      background:rgba(242,169,199,.7);
+      display:block;
+    }
+    .line{
+      height:2px;
+      background:rgba(242,169,199,.75);
+    }
+    .btnRow{
+      padding:1rem;
+      display:flex;
+      gap:.75rem;
+      justify-content:center;
+      flex-wrap:wrap;
+      background:var(--bg);
+    }
+    button{
+      padding:.6rem 1.25rem;
+      border-radius:999px;
+      border:2px solid var(--border);
+      background:var(--panel);
+      color:var(--text);
+      font:inherit;
+      cursor:pointer;
+      box-shadow:0 4px 10px rgba(242,169,199,.18);
+    }
+    button:hover{background:#ffd1e6}
+  </style>
+</head>
+
+<body>
+  <div class="dmWindow">
+    <div class="dmTop">
+      <div class="dmIcon"></div>
+      <div class="dmIcon"></div>
+      <div class="dmIcon"></div>
+      <div class="dmTitle">Inbox</div>
+    </div>
+
+    <div class="dmBody">
+      <div class="divider">
+        <span></span><div class="diamond"></div><span></span>
+      </div>
+
+      <div class="bubble" id="msg"></div>
+
+      <div class="dots">
+        <i></i><i></i><i></i>
+      </div>
+    </div>
+
+    <div class="line"></div>
+
+    <div class="btnRow">
+      <button data-set="reassurance">Reassurance</button>
+      <button data-set="whatilove">What I Love</button>
+      <button data-set="sweet">Sweet</button>
+    </div>
+  </div>
+
+  <script>
+    const sets = {
+      reassurance: [
+        "You are safe with me.",
+        "You do not have to carry everything alone.",
+        "It is okay to rest. I am not going anywhere.",
+        "You are doing better than you think.",
+        "I see you, even when you feel invisible."
+      ],
+      whatilove: [
+        "I love how thoughtful you are.",
+        "I love the way your mind works.",
+        "I love your patience.",
+        "I love how deeply you care.",
+        "I love how you keep trying."
+      ],
+      sweet: [
+        "Come here. I owe you a hug.",
+        "You are my favorite person.",
+        "I like being yours.",
+        "You make my days softer.",
+        "
+

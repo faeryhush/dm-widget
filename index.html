@@ -22,8 +22,9 @@ body{
   min-height:100vh;
   display:flex;
   justify-content:center;
-  align-items:center;
+  align-items:flex-start; /* ← CHANGE from center */
   padding:24px;
+  overflow-y:auto;        /* ← ADD THIS */
   background:
     repeating-linear-gradient(
       90deg,

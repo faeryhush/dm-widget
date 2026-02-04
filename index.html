@@ -1,236 +1,175 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Inbox</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reminder</title>
+
+  <!-- Pixel font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg1:#fff7fb;
-      --bg2:#ffe6f1;
-      --panel:#ffffff;
       --pink:#f2a9c7;
       --pink2:#ffd1e6;
-      --text:#7b2e4f;
-      --shadow:rgba(242,169,199,.25);
-      --ink:rgba(20,20,20,.85);
+      --panel:#ffffff;
+      --ink:rgba(25,25,25,.85);
+      --line:rgba(0,0,0,.18);
+      --shadow:rgba(0,0,0,.10);
     }
 
     *{box-sizing:border-box}
+
     body{
       margin:0;
       min-height:100vh;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
+      padding:28px;
+
+      /* vertical pink stripes like your image */
       background:
-        linear-gradient(0deg, rgba(255,255,255,.65), rgba(255,255,255,.65)),
-        linear-gradient(90deg, rgba(242,169,199,.18) 1px, transparent 1px),
-        linear-gradient(rgba(242,169,199,.18) 1px, transparent 1px);
-      background-size: auto, 26px 26px, 26px 26px;
-      background-color: var(--bg1);
-      padding:24px;
+        repeating-linear-gradient(
+          90deg,
+          rgba(242,169,199,.45) 0px,
+          rgba(242,169,199,.45) 22px,
+          rgba(255,255,255,1) 22px,
+          rgba(255,255,255,1) 48px
+        );
     }
 
-    .frame{
+    .wrap{
       width:min(520px, 92vw);
     }
 
-    .card{
-      border:2px solid var(--pink);
-      border-radius:26px;
-      background:linear-gradient(180deg, var(--bg2), var(--bg1));
-      box-shadow:0 12px 28px var(--shadow);
+    /* ---------- LOCK SCREEN ---------- */
+    .lock{
+      border-radius:22px;
+      border:2px solid var(--line);
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 18px 40px var(--shadow);
       overflow:hidden;
     }
 
-    /* ---------- PASSCODE SCREEN ---------- */
     .lockTop{
       padding:18px 18px 10px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:center;
       text-align:center;
     }
 
-    .lockArt{
-      width:220px;
-      aspect-ratio: 16/10;
-      border-radius:14px;
-      border:2px solid rgba(0,0,0,.25);
-      background:
-        radial-gradient(circle at 30% 35%, rgba(255,255,255,.9), transparent 55%),
-        radial-gradient(circle at 70% 60%, rgba(255,255,255,.75), transparent 55%),
-        linear-gradient(135deg, rgba(242,169,199,.55), rgba(255,230,241,.45));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:800;
-      letter-spacing:.06em;
-      color:rgba(0,0,0,.35);
-    }
-
-    .stars{
-      display:flex;
-      gap:10px;
-      margin-top:2px;
-    }
-    .star{
-      width:22px;height:22px;
-      border-radius:7px;
-      border:2px solid rgba(0,0,0,.18);
-      background:rgba(242,169,199,.35);
-      box-shadow:0 6px 14px rgba(0,0,0,.06);
-      transform: rotate(45deg);
-    }
-    .star:nth-child(2){ background: rgba(173,216,230,.45); }
-    .star:nth-child(3){ background: rgba(200,200,255,.45); }
-
     .lockTitle{
-      font-weight:800;
-      letter-spacing:.03em;
-      margin-top:6px;
-      color:rgba(0,0,0,.8);
-    }
-    .hint{
-      font-size:13px;
-      opacity:.75;
-      margin-top:2px;
+      font-family:"Press Start 2P", system-ui, sans-serif;
+      font-size:14px;
+      line-height:1.35;
+      color:var(--ink);
+      margin:8px 0 10px;
+      text-transform:uppercase;
+      letter-spacing:.02em;
     }
 
-    .codeDots{
-      display:flex;
-      gap:10px;
-      padding:10px 0 4px;
-      justify-content:center;
+    .hint{
+      font-family:"Press Start 2P", system-ui, sans-serif;
+      font-size:10px;
+      line-height:1.6;
+      opacity:.75;
+      margin:0 auto 14px;
+      max-width:360px;
     }
+
+    .dots{
+      display:flex;
+      gap:8px;
+      justify-content:center;
+      padding:10px 0 6px;
+      flex-wrap:wrap;
+    }
+
     .dot{
-      width:14px;height:14px;
+      width:12px;height:12px;
       border-radius:999px;
       border:2px solid rgba(0,0,0,.22);
-      background: rgba(255,255,255,.75);
+      background: rgba(255,255,255,.95);
     }
     .dot.filled{
-      background: rgba(242,169,199,.8);
+      background: rgba(242,169,199,.85);
+    }
+
+    .err{
+      min-height:18px;
+      font-family:"Press Start 2P", system-ui, sans-serif;
+      font-size:10px;
+      line-height:1.6;
+      color:#9b2b44;
+      padding:6px 0 2px;
     }
 
     .pad{
-      padding:10px 18px 20px;
+      padding:14px 16px 18px;
       display:grid;
       grid-template-columns: repeat(3, 1fr);
       gap:12px;
-      justify-items:stretch;
     }
+
     .key{
       border:2px solid rgba(0,0,0,.22);
       border-radius:12px;
-      background: rgba(242,169,199,.65);
-      color:rgba(255,255,255,.95);
-      font-weight:900;
-      font-size:20px;
+      background: rgba(242,169,199,.72);
+      color:#fff;
+      font-family:"Press Start 2P", system-ui, sans-serif;
+      font-size:14px;
       padding:14px 0;
-      box-shadow:0 10px 0 rgba(0,0,0,.08);
       cursor:pointer;
+      box-shadow: 0 10px 0 rgba(0,0,0,.06);
       user-select:none;
     }
-    .key:active{ transform: translateY(2px); box-shadow:0 8px 0 rgba(0,0,0,.08); }
+    .key:active{ transform: translateY(2px); box-shadow: 0 8px 0 rgba(0,0,0,.06); }
+
     .key.alt{
-      background: rgba(255,255,255,.55);
+      background: rgba(255,255,255,.75);
       color: rgba(0,0,0,.75);
-      font-size:14px;
-      font-weight:800;
-    }
-    .pad .spacer{ visibility:hidden; }
-
-    .error{
-      text-align:center;
-      font-size:13px;
-      color:#9b2b44;
-      min-height:18px;
-      padding-bottom:6px;
-      opacity:.95;
+      font-size:10px;
     }
 
-    /* ---------- MESSAGE POPUP (like image 2) ---------- */
-    .appTop{
-      padding:14px 16px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      border-bottom:2px solid rgba(242,169,199,.55);
-      background: rgba(255,255,255,.35);
-    }
-    .pillIcons{
-      display:flex; gap:8px;
-    }
-    .pill{
-      width:30px;height:16px;border-radius:999px;
-      border:2px solid rgba(0,0,0,.18);
-      background: rgba(255,255,255,.65);
-    }
-    .appTitle{
-      font-weight:900;
-      letter-spacing:.08em;
-      color:rgba(0,0,0,.7);
-      font-size:12px;
-      text-transform:uppercase;
-    }
+    .spacer{ visibility:hidden; }
 
-    .popupWrap{
-      padding:22px 16px 18px;
-      display:flex;
-      justify-content:center;
-    }
-
+    /* ---------- POPUP ---------- */
     .popup{
-      width:min(470px, 100%);
       border-radius:22px;
-      border:2px solid rgba(0,0,0,.20);
-      background: #fff;
-      box-shadow: 16px 16px 0 rgba(242,169,199,.55);
+      border:2px solid var(--line);
+      background: rgba(255,255,255,.95);
+      box-shadow: 18px 18px 0 rgba(242,169,199,.55);
       overflow:hidden;
     }
 
     .popupHeader{
       background: rgba(242,169,199,.55);
       padding:18px 16px 14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      position:relative;
-    }
-
-    .avatar{
-      position:absolute;
-      top:-18px;
-      width:56px;height:56px;
-      border-radius:999px;
-      border:2px solid rgba(0,0,0,.20);
-      background:
-        radial-gradient(circle at 30% 30%, rgba(255,255,255,.9), rgba(255,255,255,.2)),
-        linear-gradient(135deg, rgba(242,169,199,.9), rgba(200,200,255,.55));
-      box-shadow:0 10px 18px rgba(0,0,0,.08);
+      text-align:center;
     }
 
     .popupHeader h2{
       margin:0;
-      font-size:22px;
-      letter-spacing:.02em;
+      font-family:"Press Start 2P", system-ui, sans-serif;
+      font-size:16px;
+      line-height:1.35;
       color:rgba(0,0,0,.82);
+      text-transform:uppercase;
+      letter-spacing:.02em;
     }
 
     .popupBody{
       padding:22px 18px;
       background:#fff;
       color:rgba(0,0,0,.82);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size:15px;
-      line-height:1.7;
-      min-height:140px;
+
+      /* more pixelated feel */
+      font-family:"Press Start 2P", system-ui, sans-serif;
+      font-size:11px;
+      line-height:2.0;
+
+      min-height:160px;
       white-space:pre-wrap;
     }
 
@@ -240,7 +179,7 @@
       width:10px;height:1.05em;
       margin-left:6px;
       background:rgba(0,0,0,.35);
-      border-radius:3px;
+      border-radius:2px;
       animation:blink .9s steps(1) infinite;
       transform:translateY(2px);
     }
@@ -248,91 +187,54 @@
 
     .popupFooter{
       display:grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       border-top:2px solid rgba(0,0,0,.12);
-      background: rgba(255,255,255,.85);
+      background: rgba(255,255,255,.88);
     }
 
     .footBtn{
-      padding:14px 12px;
+      padding:14px 10px;
       background: transparent;
       border:0;
       cursor:pointer;
-      font-weight:900;
-      letter-spacing:.02em;
-      color:rgba(0,0,0,.75);
       display:flex;
       justify-content:center;
       align-items:center;
-      gap:10px;
     }
     .footBtn + .footBtn{
       border-left:2px solid rgba(0,0,0,.10);
     }
 
-    .miniTag{
+    .tag{
       display:inline-block;
-      padding:6px 10px;
+      padding:8px 10px;
       border-radius:999px;
       border:2px solid rgba(0,0,0,.15);
-      background: rgba(242,169,199,.30);
-      font-size:12px;
-      font-weight:900;
-      color:rgba(0,0,0,.75);
-    }
+      background: rgba(242,169,199,.28);
 
-    .rowBtns{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:center;
-      padding:0 16px 18px;
-    }
-    .chip{
-      border:2px solid rgba(0,0,0,.18);
-      border-radius:999px;
-      background: rgba(255,230,241,.85);
-      padding:10px 14px;
-      font-weight:900;
-      cursor:pointer;
+      font-family:"Press Start 2P", system-ui, sans-serif;
+      font-size:9px;
+      line-height:1.6;
       color:rgba(0,0,0,.75);
-      box-shadow:0 10px 0 rgba(0,0,0,.06);
+      text-transform:uppercase;
+      text-align:center;
     }
-    .chip:active{ transform: translateY(2px); box-shadow:0 8px 0 rgba(0,0,0,.06); }
 
     .hidden{ display:none !important; }
-
-    .note{
-      text-align:center;
-      font-size:12px;
-      opacity:.6;
-      margin-top:10px;
-    }
   </style>
 </head>
 
 <body>
-  <div class="frame">
+  <div class="wrap">
 
-    <!-- LOCK SCREEN -->
-    <div class="card" id="lockScreen">
+    <!-- LOCK -->
+    <section class="lock" id="lockScreen">
       <div class="lockTop">
-        <div class="lockArt">ENTER</div>
-        <div class="stars" aria-hidden="true">
-          <div class="star"></div><div class="star"></div><div class="star"></div>
-        </div>
-
         <div class="lockTitle">Enter Passcode</div>
-        <div class="hint" id="hintText"></div>
+        <div class="hint" id="hintText">Hint: the day you reach me up</div>
 
-        <div class="codeDots" aria-label="Passcode length">
-          <div class="dot" id="d0"></div>
-          <div class="dot" id="d1"></div>
-          <div class="dot" id="d2"></div>
-          <div class="dot" id="d3"></div>
-        </div>
-
-        <div class="error" id="err"></div>
+        <div class="dots" id="dots" aria-label="Passcode digits"></div>
+        <div class="err" id="err"></div>
       </div>
 
       <div class="pad" aria-label="Keypad">
@@ -349,55 +251,37 @@
         <button class="key" data-k="0">0</button>
         <button class="key alt" data-k="del">Delete</button>
       </div>
-    </div>
+    </section>
 
-    <!-- APP SCREEN -->
-    <div class="card hidden" id="appScreen">
-      <div class="appTop">
-        <div class="pillIcons" aria-hidden="true">
-          <div class="pill"></div><div class="pill"></div><div class="pill"></div>
-        </div>
-        <div class="appTitle">Messages</div>
-        <div style="width:68px"></div>
+    <!-- POPUP -->
+    <section class="popup hidden" id="popupScreen" role="dialog" aria-label="Reminder">
+      <div class="popupHeader">
+        <h2 id="popupTitle">Reminder</h2>
       </div>
 
-      <div class="popupWrap">
-        <div class="popup" role="dialog" aria-label="Reminder popup">
-          <div class="popupHeader">
-            <div class="avatar" aria-hidden="true"></div>
-            <h2 id="popupTitle">Reminder</h2>
-          </div>
+      <div class="popupBody" id="msg"></div>
 
-          <div class="popupBody" id="msg"></div>
-
-          <div class="popupFooter">
-            <button class="footBtn" id="btnOkay" type="button">
-              <span class="miniTag">Okay</span>
-            </button>
-            <button class="footBtn" id="btnGreat" type="button">
-              <span class="miniTag">Great</span>
-            </button>
-          </div>
-        </div>
+      <div class="popupFooter">
+        <button class="footBtn pick" data-set="reassurance" type="button">
+          <span class="tag">Reassurance</span>
+        </button>
+        <button class="footBtn pick" data-set="whatilove" type="button">
+          <span class="tag">What I Love</span>
+        </button>
+        <button class="footBtn pick" data-set="sweet" type="button">
+          <span class="tag">Something Sweet</span>
+        </button>
       </div>
-
-      <div class="rowBtns">
-        <button class="chip" data-set="reassurance">Reassurance</button>
-        <button class="chip" data-set="whatilove">What I Love</button>
-        <button class="chip" data-set="sweet">Sweet</button>
-      </div>
-
-      <div class="note">Tip: “Okay” shows another message. “Great” switches category.</div>
-    </div>
+    </section>
 
   </div>
 
   <script>
-    // ----------------- EDIT THESE -----------------
-    const PASSCODE = "1234"; // <-- change this
-    const HINT = "Hint: the day you reach me up"; // <-- change this
-    const REMEMBER_UNLOCK = true; // remembers on that device
-    // ------------------------------------------------
+    // PASSCODE: July 24, 2024 (MMDDYYYY)
+    const PASSCODE = "07242024";
+
+    // Always show lock on launch:
+    // (We do NOT store unlock state anywhere.)
 
     const sets = {
       reassurance: [
@@ -424,43 +308,32 @@
     };
 
     const lockScreen = document.getElementById("lockScreen");
-    const appScreen  = document.getElementById("appScreen");
-    const hintText   = document.getElementById("hintText");
-    const err        = document.getElementById("err");
-    const msgEl      = document.getElementById("msg");
-    const popupTitle = document.getElementById("popupTitle");
-
-    hintText.textContent = HINT;
+    const popupScreen = document.getElementById("popupScreen");
+    const msgEl = document.getElementById("msg");
+    const err = document.getElementById("err");
+    const dotsWrap = document.getElementById("dots");
 
     let entered = "";
-    let timer = null;
     let currentSet = "sweet";
+    let timer = null;
 
-    function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+    // Build dots to match passcode length (8 digits)
+    const LEN = PASSCODE.length;
+    for (let i = 0; i < LEN; i++){
+      const d = document.createElement("div");
+      d.className = "dot";
+      d.id = "d" + i;
+      dotsWrap.appendChild(d);
+    }
 
     function setDots(){
-      for (let i=0;i<4;i++){
-        document.getElementById("d"+i).classList.toggle("filled", i < entered.length);
+      for (let i = 0; i < LEN; i++){
+        const el = document.getElementById("d" + i);
+        el.classList.toggle("filled", i < entered.length);
       }
     }
 
-    function unlock(){
-      lockScreen.classList.add("hidden");
-      appScreen.classList.remove("hidden");
-      if (REMEMBER_UNLOCK) localStorage.setItem("dmUnlocked","1");
-      showMessage(currentSet);
-    }
-
-    function resetEntry(){
-      entered = "";
-      setDots();
-    }
-
-    function fail(){
-      err.textContent = "Incorrect code.";
-      resetEntry();
-      setTimeout(()=>{ err.textContent = ""; }, 1200);
-    }
+    function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
     function typeOut(text, speed=18){
       if (timer) clearInterval(timer);
@@ -479,56 +352,54 @@
 
     function showMessage(setName){
       currentSet = setName;
-      popupTitle.textContent = "Reminder";
       typeOut(pick(sets[setName]), 18);
     }
 
-    // Remember unlock (optional)
-    if (REMEMBER_UNLOCK && localStorage.getItem("dmUnlocked") === "1") {
-      unlock();
+    function unlock(){
+      lockScreen.classList.add("hidden");
+      popupScreen.classList.remove("hidden");
+      showMessage(currentSet);
     }
 
-    // Keypad
+    function fail(){
+      err.textContent = "Incorrect code.";
+      entered = "";
+      setDots();
+      setTimeout(()=>{ err.textContent = ""; }, 1200);
+    }
+
+    // Keypad input
     document.addEventListener("click", (e)=>{
       const key = e.target.closest("[data-k]");
       if (!key) return;
 
       const k = key.getAttribute("data-k");
+
       if (k === "del") {
         entered = entered.slice(0, -1);
         setDots();
         return;
       }
 
-      if (entered.length >= 4) return;
+      if (entered.length >= LEN) return;
       entered += k;
       setDots();
 
-      if (entered.length === 4) {
+      if (entered.length === LEN) {
         if (entered === PASSCODE) unlock();
         else fail();
       }
     });
 
-    // Popup buttons behavior
-    document.getElementById("btnOkay").addEventListener("click", ()=>{
-      showMessage(currentSet);
-    });
-
-    document.getElementById("btnGreat").addEventListener("click", ()=>{
-      // rotate categories for a “surprise” feel
-      const order = ["reassurance","whatilove","sweet"];
-      const idx = order.indexOf(currentSet);
-      const next = order[(idx + 1) % order.length];
-      showMessage(next);
-    });
-
-    // Category chips
+    // Footer buttons pick category
     document.addEventListener("click", (e)=>{
-      const chip = e.target.closest(".chip[data-set]");
-      if (!chip) return;
-      showMessage(chip.getAttribute("data-set"));
+      const pickBtn = e.target.closest(".pick[data-set]");
+      if (!pickBtn) return;
+      showMessage(pickBtn.getAttribute("data-set"));
     });
+
+    // Initialize dots
+    setDots();
   </script>
 </body>
 </html>

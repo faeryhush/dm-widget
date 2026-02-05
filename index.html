@@ -22,9 +22,9 @@ body{
   min-height:100vh;
   display:flex;
   justify-content:center;
-  align-items:flex-start; /* ← CHANGE from center */
+  align-items:flex-start;
   padding:24px;
-  overflow-y:auto;        /* ← ADD THIS */
+  overflow-y:auto;
   background:
     repeating-linear-gradient(
       90deg,
@@ -91,6 +91,7 @@ body{
   grid-template-columns:repeat(3,1fr);
   gap:10px;
   padding:14px;
+  border-top:2px solid var(--line);
 }
 
 .key{
@@ -118,6 +119,11 @@ body{
   border:2px solid var(--line);
   box-shadow:14px 14px 0 rgba(242,169,199,.55);
   overflow:hidden;
+
+  /* slightly smaller like reference */
+  width: 360px;
+  max-width: 92vw;
+  margin: 0 auto;
 }
 
 .popupHeader{
@@ -188,4 +194,128 @@ body{
     <div class="err" id="err"></div>
   </div>
 
-  <div
+  <div class="pad" id="pad">
+    <button class="key" data-k="1">1</button>
+    <button class="key" data-k="2">2</button>
+    <button class="key" data-k="3">3</button>
+
+    <button class="key" data-k="4">4</button>
+    <button class="key" data-k="5">5</button>
+    <button class="key" data-k="6">6</button>
+
+    <button class="key" data-k="7">7</button>
+    <button class="key" data-k="8">8</button>
+    <button class="key" data-k="9">9</button>
+
+    <div class="spacer"></div>
+    <button class="key" data-k="0">0</button>
+    <button class="key alt" data-k="del">Del</button>
+  </div>
+</section>
+
+<section class="popup hidden" id="popup">
+  <div class="popupHeader">New Message</div>
+  <div class="popupBody" id="msg"></div>
+  <div class="popupFooter">
+    <button data-set="reassurance"><span class="tag">Reassurance</span></button>
+    <button data-set="what"><span class="tag">What I Love</span></button>
+    <button data-set="sweet"><span class="tag">Something Sweet</span></button>
+  </div>
+</section>
+
+</div>
+
+<script>
+const PASS="07242024";
+
+const sets={
+  reassurance:[
+    "You are safe with me.",
+    "You are not too much.",
+    "I am here, even when things feel heavy."
+  ],
+  what:[
+    "I love how thoughtful you are.",
+    "I love the way your mind works.",
+    "I love how deeply you care."
+  ],
+  sweet:[
+    "You are my favorite person.",
+    "I like being yours.",
+    "I am really glad I get to love you."
+  ]
+};
+
+const dots=document.getElementById("dots");
+const err=document.getElementById("err");
+const lock=document.getElementById("lock");
+const popup=document.getElementById("popup");
+const msg=document.getElementById("msg");
+
+let entered="";
+
+for(let i=0;i<PASS.length;i++){
+  const d=document.createElement("div");
+  d.className="dot";
+  dots.appendChild(d);
+}
+
+function updateDots(){
+  [...dots.children].forEach((d,i)=>d.classList.toggle("filled",i<entered.length));
+}
+
+function type(text){
+  msg.textContent="";
+  msg.classList.add("typing");
+  let i=0;
+  const t=setInterval(()=>{
+    msg.textContent+=text[i++] || "";
+    if(i>=text.length){
+      clearInterval(t);
+      msg.classList.remove("typing");
+    }
+  },18);
+}
+
+document.addEventListener("click",e=>{
+  const btn = e.target.closest("[data-k]");
+  if(!btn) return;
+
+  const k = btn.dataset.k;
+
+  if(k==="del"){
+    entered=entered.slice(0,-1);
+    updateDots();
+    return;
+  }
+
+  if(entered.length < PASS.length){
+    entered += k;
+    updateDots();
+  }
+
+  if(entered.length === PASS.length){
+    if(entered === PASS){
+      lock.classList.add("hidden");
+      popup.classList.remove("hidden");
+      type(sets.sweet[Math.floor(Math.random()*sets.sweet.length)]);
+    } else {
+      err.textContent="Incorrect";
+      entered="";
+      updateDots();
+      setTimeout(()=>err.textContent="",1000);
+    }
+  }
+});
+
+document.querySelectorAll("[data-set]").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    const arr = sets[b.dataset.set];
+    type(arr[Math.floor(Math.random()*arr.length)]);
+  });
+});
+
+updateDots();
+</script>
+</body>
+</html>

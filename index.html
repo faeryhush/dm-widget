@@ -84,13 +84,6 @@ body{
 
 .dot.filled{background:var(--pink)}
 
-.err{
-  height:16px;
-  font-size:9px;
-  color:#a33;
-}
-
-/* keypad */
 .pad{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -119,7 +112,6 @@ body{
 
 /* ---------- POPUP ---------- */
 .popup{
-  position:relative;
   background:#fff;
   border-radius:20px;
   border:2px solid var(--line);
@@ -137,28 +129,8 @@ body{
   font-size:14px;
 }
 
-/* tiny mute toggle */
-.muteBtn{
-  position:absolute;
-  top:10px;
-  right:10px;
-  padding:6px 8px;
-  border-radius:999px;
-  border:2px solid var(--line);
-  background:rgba(242,169,199,.35);
-  font-family:'Press Start 2P', monospace;
-  font-size:7px;
-  line-height:1;
-  color:#fff;
-  -webkit-appearance:none;
-  appearance:none;
-  cursor:pointer;
-}
-.muteBtn:active{ transform:translateY(1px); }
-
 .popupBody{
   padding:18px 16px;
-  min-height:120px;
   font-family:'Press Start 2P', monospace;
   font-size:10px;
   line-height:2;
@@ -189,7 +161,7 @@ body{
   width:100%;
   -webkit-appearance:none;
   appearance:none;
-  color:#fff; /* prevents iOS blue */
+  color:#fff;
   text-align:center;
 }
 
@@ -206,9 +178,6 @@ body{
   border:2px solid var(--line);
   background:rgba(242,169,199,.55);
   color:#fff;
-  display:inline-block;
-  max-width:100%;
-  white-space:normal;
 }
 
 .hidden{display:none}
@@ -223,7 +192,6 @@ body{
     <h1>Enter Passcode</h1>
     <p>the day we met</p>
     <div class="dots" id="dots"></div>
-    <div class="err" id="err"></div>
   </div>
 
   <div class="pad">
@@ -244,8 +212,22 @@ body{
 
 <section class="popup hidden" id="popup">
   <div class="popupHeader">New Message</div>
-  <button class="muteBtn" id="muteBtn" type="button" aria-label="Toggle music">MUSIC: ON</button>
-  <div class="popupBody" id="msg"></div>
+
+  <div class="popupBody">
+    <div id="msg"></div>
+
+    <!-- Spotify player -->
+    <iframe
+      style="border-radius:12px; margin-top:14px;"
+      src="https://open.spotify.com/embed/track/5I2UElY0XPnPhQhBTxBcq3"
+      width="100%"
+      height="80"
+      frameborder="0"
+      allow="encrypted-media"
+      loading="lazy">
+    </iframe>
+  </div>
+
   <div class="popupFooter">
     <button data-set="reassurance"><span class="tag">Reassurance</span></button>
     <button data-set="what"><span class="tag">What I Love</span></button>
@@ -254,11 +236,6 @@ body{
 </section>
 
 </div>
-
-<!-- Background music (you supply the file in your repo) -->
-<audio id="bgm" preload="auto" loop>
-  <source src="audio/bloodstream-stateless.mp3" type="audio/mpeg">
-</audio>
 
 <script>
 const PASS = "07242024";
@@ -287,28 +264,6 @@ const sets = {
   ]
 };
 
-let audioCtx=null;
-function ensureAudio(){
-  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-  if(audioCtx.state==="suspended") audioCtx.resume();
-}
-
-function clickSound(freq=620){
-  if(!audioCtx) return;
-  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
-  o.type="triangle";
-  o.frequency.value=freq;
-  g.gain.setValueAtTime(.035,audioCtx.currentTime);
-  g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.08);
-  o.connect(g); g.connect(audioCtx.destination);
-  o.start(); o.stop(audioCtx.currentTime+.08);
-}
-
-function unlockSound(){
-  clickSound(520); setTimeout(()=>clickSound(780),90);
-}
-
-/* typing */
 let typingTimer=null;
 function typeText(text){
   const el=document.getElementById("msg");
@@ -318,7 +273,6 @@ function typeText(text){
   clearInterval(typingTimer);
   typingTimer=setInterval(()=>{
     el.textContent+=text[i++]||"";
-    clickSound(480);
     if(i>=text.length){
       clearInterval(typingTimer);
       el.classList.remove("typing");
@@ -326,69 +280,6 @@ function typeText(text){
   }, 40);
 }
 
-/* music (AUTO ON after unlock) */
-const bgm = document.getElementById("bgm");
-const muteBtn = document.getElementById("muteBtn");
-
-let bgmReady = false;   // becomes true after unlock
-let bgmMuted = false;   // default ON
-let bgmStarted = false;
-
-function updateMuteLabel(){
-  muteBtn.textContent = bgmMuted ? "MUSIC: OFF" : "MUSIC: ON";
-}
-
-function fadeTo(target=0.06, step=0.004, everyMs=120){
-  const dir = (bgm.volume < target) ? 1 : -1;
-  const t = setInterval(()=>{
-    const next = bgm.volume + dir*step;
-    if((dir===1 && next >= target) || (dir===-1 && next <= target)){
-      bgm.volume = Math.max(0, Math.min(1, target));
-      clearInterval(t);
-      return;
-    }
-    bgm.volume = Math.max(0, Math.min(1, next));
-  }, everyMs);
-}
-
-function startBgmIfAllowed(){
-  if(!bgmReady || bgmMuted || bgmStarted) return;
-  bgmStarted = true;
-  bgm.volume = 0;
-  bgm.play().then(()=>{
-    fadeTo(0.06);
-  }).catch(()=>{
-    // If play is blocked, allow retry on next tap.
-    bgmStarted = false;
-  });
-}
-
-function stopBgmSoft(){
-  if(!bgmStarted) return;
-  fadeTo(0, 0.006, 90);
-  setTimeout(()=>{
-    bgm.pause();
-    bgm.currentTime = 0;
-    bgmStarted = false;
-  }, 900);
-}
-
-muteBtn.addEventListener("click", (e)=>{
-  e.stopPropagation();
-  ensureAudio();
-  clickSound();
-  bgmMuted = !bgmMuted;
-  updateMuteLabel();
-  if(!bgmMuted){
-    startBgmIfAllowed();
-  } else {
-    stopBgmSoft();
-  }
-});
-
-updateMuteLabel();
-
-/* lock dots */
 const dots=document.getElementById("dots");
 for(let i=0;i<PASS.length;i++) dots.appendChild(document.createElement("div")).className="dot";
 let entered="";
@@ -398,25 +289,17 @@ function updateDots(){
 }
 
 document.addEventListener("click",e=>{
-  ensureAudio();
   const k=e.target.closest("[data-k]");
   const b=e.target.closest("[data-set]");
 
   if(k){
-    clickSound();
     if(k.dataset.k==="del"){entered=entered.slice(0,-1);updateDots();return;}
     if(entered.length<PASS.length){entered+=k.dataset.k;updateDots();}
     if(entered.length===PASS.length){
       if(entered===PASS){
-        unlockSound();
         document.getElementById("lock").classList.add("hidden");
         document.getElementById("popup").classList.remove("hidden");
         typeText(sets.sweet[Math.floor(Math.random()*sets.sweet.length)]);
-
-        // music becomes available AFTER unlock, and is ON by default
-        bgmReady = true;
-        startBgmIfAllowed();
-
       } else {
         entered=""; updateDots();
       }
@@ -424,14 +307,8 @@ document.addEventListener("click",e=>{
   }
 
   if(b){
-    clickSound();
     typeText(sets[b.dataset.set][Math.floor(Math.random()*sets[b.dataset.set].length)]);
   }
-});
-
-// If playback was blocked, retry on any later tap when music is ON:
-document.addEventListener("click", ()=>{
-  if(bgmReady && !bgmMuted) startBgmIfAllowed();
 });
 </script>
 </body>

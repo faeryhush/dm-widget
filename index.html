@@ -163,12 +163,14 @@ body{
 }
 
 .popupFooter button{
-  padding:12px 6px;
+  padding:14px 6px;              /* a touch more breathing room */
   background:none;
   border:none;
   width:100%;
   -webkit-appearance:none;
   appearance:none;
+  color:#fff;                    /* prevents iOS "blue button text" */
+  text-align:center;
 }
 
 .popupFooter button+button{
@@ -178,10 +180,15 @@ body{
 .tag{
   font-family:'Press Start 2P', monospace;
   font-size:7px;
+  line-height:1.35;              /* helps 2-line label look nice */
   padding:7px 8px;
   border-radius:999px;
   border:2px solid var(--line);
   background:rgba(242,169,199,.55);
+  color:#fff;                    /* white (swap to var(--pink) if you want pink text) */
+  display:inline-block;
+  max-width:100%;
+  white-space:normal;
 }
 
 .hidden{display:none}
@@ -221,7 +228,7 @@ body{
   <div class="popupFooter">
     <button data-set="reassurance"><span class="tag">Reassurance</span></button>
     <button data-set="what"><span class="tag">What I Love</span></button>
-    <button data-set="sweet"><span class="tag">Something Sweet</span></button>
+    <button data-set="sweet"><span class="tag">Something<br>Sweet</span></button>
   </div>
 </section>
 
@@ -282,6 +289,7 @@ function typeText(text){
   el.textContent="";
   el.classList.add("typing");
   let i=0;
+  clearInterval(typingTimer);
   typingTimer=setInterval(()=>{
     el.textContent+=text[i++]||"";
     clickSound(480);
@@ -289,7 +297,7 @@ function typeText(text){
       clearInterval(typingTimer);
       el.classList.remove("typing");
     }
-  }, 65); /* ← SLOWER typing */
+  }, 40); /* ← FASTER typing */
 }
 
 const dots=document.getElementById("dots");

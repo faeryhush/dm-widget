@@ -23,7 +23,7 @@ body{
   min-height:100vh;
   display:flex;
   justify-content:center;
-  align-items:flex-start; /* avoids iOS clipping */
+  align-items:flex-start;
   padding:24px;
   overflow-y:auto;
   background:
@@ -36,11 +36,10 @@ body{
     );
 }
 
-/* slightly lower / closer to center */
 .wrap{
   width:420px;
   max-width:95vw;
-  margin: 140px auto 40px;
+  margin:140px auto 40px;
 }
 
 /* ---------- LOCK ---------- */
@@ -81,7 +80,6 @@ body{
   height:12px;
   border-radius:50%;
   border:2px solid var(--line);
-  background:transparent;
 }
 
 .dot.filled{background:var(--pink)}
@@ -109,12 +107,6 @@ body{
   border:2px solid var(--line);
   background:var(--pink);
   color:#fff;
-  box-shadow: inset 0 -3px 0 rgba(0,0,0,.08);
-}
-
-.key:active{
-  transform: translateY(1px);
-  box-shadow: inset 0 -1px 0 rgba(0,0,0,.08);
 }
 
 .key.alt{
@@ -132,10 +124,8 @@ body{
   border:2px solid var(--line);
   box-shadow:14px 14px 0 rgba(242,169,199,.55);
   overflow:hidden;
-
-  width: 360px;       /* slightly smaller like reference */
-  max-width: 92vw;
-  margin: 0 auto;
+  width:360px;
+  max-width:92vw;
 }
 
 .popupHeader{
@@ -152,7 +142,6 @@ body{
   font-family:'Press Start 2P', monospace;
   font-size:10px;
   line-height:2;
-  color:#111;
 }
 
 .typing::after{
@@ -178,40 +167,21 @@ body{
   background:none;
   border:none;
   width:100%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  /* iOS “blue button text” prevention */
   -webkit-appearance:none;
   appearance:none;
-  color: inherit;
 }
 
 .popupFooter button+button{
   border-left:2px solid var(--line);
 }
 
-.popupFooter button:link,
-.popupFooter button:visited,
-.popupFooter button:hover,
-.popupFooter button:active{
-  color: inherit;
-}
-
 .tag{
   font-family:'Press Start 2P', monospace;
   font-size:7px;
-  line-height:1.2;
   padding:7px 8px;
   border-radius:999px;
   border:2px solid var(--line);
   background:rgba(242,169,199,.55);
-  color:#222;
-  display:inline-block;
-  max-width:100%;
-  text-align:center;
-  white-space:normal; /* allow wrap for “What I Love”, etc. */
 }
 
 .hidden{display:none}
@@ -229,19 +199,16 @@ body{
     <div class="err" id="err"></div>
   </div>
 
-  <div class="pad" id="pad">
+  <div class="pad">
     <button class="key" data-k="1">1</button>
     <button class="key" data-k="2">2</button>
     <button class="key" data-k="3">3</button>
-
     <button class="key" data-k="4">4</button>
     <button class="key" data-k="5">5</button>
     <button class="key" data-k="6">6</button>
-
     <button class="key" data-k="7">7</button>
     <button class="key" data-k="8">8</button>
     <button class="key" data-k="9">9</button>
-
     <div class="spacer"></div>
     <button class="key" data-k="0">0</button>
     <button class="key alt" data-k="del">Del</button>
@@ -261,14 +228,13 @@ body{
 </div>
 
 <script>
-/* ----------------- CONFIG ----------------- */
 const PASS = "07242024";
 
 const sets = {
   reassurance: [
     "You are safe with me.",
     "You are not too much.",
-    "I am here, even when things feel heavy.",
+    "I am here.",
     "You do not have to carry everything alone.",
     "I believe you."
   ],
@@ -288,178 +254,76 @@ const sets = {
   ]
 };
 
-/* ----------------- AUDIO (soft + bubbly ASMR) ----------------- */
-/* Note: iOS Safari allows audio only after user interaction. */
-let audioCtx = null;
-
+let audioCtx=null;
 function ensureAudio(){
-  if (!audioCtx){
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (audioCtx.state === "suspended") audioCtx.resume();
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==="suspended") audioCtx.resume();
 }
 
-function softPop({freq=520, dur=0.07, gain=0.018} = {}){
+/* clearer but still soft */
+function clickSound(freq=620){
   if(!audioCtx) return;
-
-  const t0 = audioCtx.currentTime;
-  const osc = audioCtx.createOscillator();
-  const g   = audioCtx.createGain();
-  const f   = audioCtx.createBiquadFilter();
-
-  osc.type = "sine";
-  osc.frequency.setValueAtTime(freq, t0);
-  osc.frequency.exponentialRampToValueAtTime(freq * 0.82, t0 + dur);
-
-  f.type = "lowpass";
-  f.frequency.setValueAtTime(2200, t0);
-
-  g.gain.setValueAtTime(0.0001, t0);
-  g.gain.exponentialRampToValueAtTime(gain, t0 + 0.012);
-  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-
-  // tiny “air” noise for softness
-  const noiseBuf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * dur), audioCtx.sampleRate);
-  const data = noiseBuf.getChannelData(0);
-  for(let i=0;i<data.length;i++){
-    data[i] = (Math.random()*2-1) * 0.12;
-  }
-  const noise = audioCtx.createBufferSource();
-  const ng = audioCtx.createGain();
-  const nf = audioCtx.createBiquadFilter();
-  noise.buffer = noiseBuf;
-
-  nf.type = "highpass";
-  nf.frequency.setValueAtTime(1200, t0);
-
-  ng.gain.setValueAtTime(0.0001, t0);
-  ng.gain.exponentialRampToValueAtTime(gain * 0.35, t0 + 0.01);
-  ng.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-
-  osc.connect(f); f.connect(g); g.connect(audioCtx.destination);
-  noise.connect(nf); nf.connect(ng); ng.connect(audioCtx.destination);
-
-  osc.start(t0);
-  noise.start(t0);
-
-  osc.stop(t0 + dur);
-  noise.stop(t0 + dur);
-}
-
-function clickSound(){
-  softPop({freq:560, dur:0.06, gain:0.016});
-  setTimeout(()=>softPop({freq:680, dur:0.05, gain:0.012}), 35);
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type="triangle";
+  o.frequency.value=freq;
+  g.gain.setValueAtTime(.035,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.08);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime+.08);
 }
 
 function unlockSound(){
-  softPop({freq:520, dur:0.08, gain:0.018});
-  setTimeout(()=>softPop({freq:740, dur:0.08, gain:0.018}), 70);
-  setTimeout(()=>softPop({freq:980, dur:0.10, gain:0.017}), 150);
+  clickSound(520); setTimeout(()=>clickSound(780),90);
 }
 
-let typingTimer = null;
-function typingTick(start){
-  if(!audioCtx) return;
-
-  if(start){
-    if(typingTimer) clearInterval(typingTimer);
-    typingTimer = setInterval(()=>{
-      softPop({
-        freq: 420 + Math.random()*120,
-        dur: 0.035,
-        gain: 0.006
-      });
-    }, 55);
-  } else {
-    if(typingTimer) clearInterval(typingTimer);
-    typingTimer = null;
-  }
+let typingTimer=null;
+function typeText(text){
+  const el=document.getElementById("msg");
+  el.textContent="";
+  el.classList.add("typing");
+  let i=0;
+  typingTimer=setInterval(()=>{
+    el.textContent+=text[i++]||"";
+    clickSound(480);
+    if(i>=text.length){
+      clearInterval(typingTimer);
+      el.classList.remove("typing");
+    }
+  }, 65); /* ← SLOWER typing */
 }
 
-/* ----------------- UI LOGIC ----------------- */
-const dots = document.getElementById("dots");
-const err  = document.getElementById("err");
-const lock = document.getElementById("lock");
-const popup= document.getElementById("popup");
-const msg  = document.getElementById("msg");
-
-let entered = "";
-let isTyping = false;
-
-for(let i=0;i<PASS.length;i++){
-  const d=document.createElement("div");
-  d.className="dot";
-  dots.appendChild(d);
-}
+const dots=document.getElementById("dots");
+for(let i=0;i<PASS.length;i++) dots.appendChild(document.createElement("div")).className="dot";
+let entered="";
 
 function updateDots(){
-  [...dots.children].forEach((d,i)=>d.classList.toggle("filled", i < entered.length));
+  [...dots.children].forEach((d,i)=>d.classList.toggle("filled",i<entered.length));
 }
 
-function typeText(text){
-  msg.textContent = "";
-  msg.classList.add("typing");
-  let i=0;
-
-  isTyping = true;
-  typingTick(true);
-
-  const t = setInterval(()=>{
-    msg.textContent += text[i++] || "";
-    if(i >= text.length){
-      clearInterval(t);
-      msg.classList.remove("typing");
-      isTyping = false;
-      typingTick(false);
-    }
-  }, 22);
-}
-
-document.addEventListener("click", (e)=>{
-  ensureAudio(); // first tap “unlocks” audio on iOS
-
-  const keyBtn = e.target.closest("[data-k]");
-  const setBtn = e.target.closest("[data-set]");
-
-  if(keyBtn){
+document.addEventListener("click",e=>{
+  ensureAudio();
+  const k=e.target.closest("[data-k]");
+  const b=e.target.closest("[data-set]");
+  if(k){
     clickSound();
-    const k = keyBtn.dataset.k;
-
-    if(k === "del"){
-      entered = entered.slice(0,-1);
-      updateDots();
-      return;
-    }
-
-    if(entered.length < PASS.length){
-      entered += k;
-      updateDots();
-    }
-
-    if(entered.length === PASS.length){
-      if(entered === PASS){
+    if(k.dataset.k==="del"){entered=entered.slice(0,-1);updateDots();return;}
+    if(entered.length<PASS.length){entered+=k.dataset.k;updateDots();}
+    if(entered.length===PASS.length){
+      if(entered===PASS){
         unlockSound();
-        lock.classList.add("hidden");
-        popup.classList.remove("hidden");
+        document.getElementById("lock").classList.add("hidden");
+        document.getElementById("popup").classList.remove("hidden");
         typeText(sets.sweet[Math.floor(Math.random()*sets.sweet.length)]);
       } else {
-        err.textContent = "Incorrect";
-        entered = "";
-        updateDots();
-        setTimeout(()=>err.textContent="", 1000);
+        entered=""; updateDots();
       }
     }
-    return;
   }
-
-  if(setBtn){
+  if(b){
     clickSound();
-    const arr = sets[setBtn.dataset.set];
-    typeText(arr[Math.floor(Math.random()*arr.length)]);
+    typeText(sets[b.dataset.set][Math.floor(Math.random()*sets[b.dataset.set].length)]);
   }
 });
-
-updateDots();
 </script>
 </body>
 </html>

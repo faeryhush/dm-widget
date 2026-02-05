@@ -159,9 +159,7 @@ body{
   padding:0;
 }
 .musicBtn:active{transform:translateY(1px)}
-.musicBtn.on{
-  background:rgba(242,169,199,.35);
-}
+.musicBtn.on{ background:rgba(242,169,199,.35); }
 
 .popupBody{
   padding:18px 16px;
@@ -252,7 +250,6 @@ body{
 <section class="popup hidden" id="popup">
   <div class="popupHeader">
     New Message
-    <!-- tiny play/pause -->
     <button class="musicBtn" id="musicBtn" type="button" aria-label="Toggle music">►</button>
   </div>
 
@@ -322,16 +319,15 @@ function unlockSound(){
   clickSound(520); setTimeout(()=>clickSound(780),90);
 }
 
-/* ---- softer, more "real typing" sound (noise + filter) ---- */
+/* ---- softer, more "real typing" sound ---- */
 function typeKeySound(){
   if(!audioCtx) return;
 
-  // very short noise burst
-  const dur = 0.016; // seconds
+  const dur = 0.016;
   const buffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * dur), audioCtx.sampleRate);
   const data = buffer.getChannelData(0);
   for(let i=0;i<data.length;i++){
-    data[i] = (Math.random()*2-1) * (0.7 - (i/data.length)*0.6); // quick taper
+    data[i] = (Math.random()*2-1) * (0.7 - (i/data.length)*0.6);
   }
 
   const src = audioCtx.createBufferSource();
@@ -339,11 +335,10 @@ function typeKeySound(){
 
   const filter = audioCtx.createBiquadFilter();
   filter.type = "bandpass";
-  filter.frequency.value = 2200;      // "key clack" range
+  filter.frequency.value = 2200;
   filter.Q.value = 1.1;
 
   const g = audioCtx.createGain();
-  // softer than before
   g.gain.setValueAtTime(0.006, audioCtx.currentTime);
   g.gain.exponentialRampToValueAtTime(0.0008, audioCtx.currentTime + dur);
 
@@ -368,7 +363,6 @@ function typeText(text){
     const ch = text[i++] || "";
     el.textContent += ch;
 
-    // sound: skip most spaces, keep it soft + not *every* character
     if(ch && ch !== " " && ch !== "\n"){
       if(Math.random() < 0.85) typeKeySound();
     }
@@ -384,21 +378,32 @@ function typeText(text){
 const dots=document.getElementById("dots");
 for(let i=0;i<PASS.length;i++) dots.appendChild(document.createElement("div")).className="dot";
 let entered="";
-
 function updateDots(){
   [...dots.children].forEach((d,i)=>d.classList.toggle("filled",i<entered.length));
 }
 
-/* helper: try to play music (works after user interaction) */
+/* ---- music control / autoplay logic ---- */
+let unlocked = false;
+let userPausedMusic = false;
+let musicEverStarted = false;
+
+function applyMusicDefaults(){
+  const player = document.getElementById("autoPlayer");
+  if(!player) return;
+  player.volume = 0.45;  // ✅ softer background music (tweak 0.35–0.6)
+  player.loop = true;
+}
+
 function tryAutoPlay(){
   const player = document.getElementById("autoPlayer");
   if(!player) return;
-  player.volume = 0.8;
-  player.loop = true;
-  player.play().catch(()=>{});
+  applyMusicDefaults();
+  player.play().then(()=>{
+    musicEverStarted = true;
+    updateMusicBtn();
+  }).catch(()=>{});
 }
 
-/* ---- music button ---- */
 const musicBtn = document.getElementById("musicBtn");
 function updateMusicBtn(){
   const player = document.getElementById("autoPlayer");
@@ -410,14 +415,16 @@ function updateMusicBtn(){
 }
 
 musicBtn.addEventListener("click",(e)=>{
-  e.stopPropagation(); // don't trigger other click handlers
+  e.stopPropagation();
   ensureAudio();
   const player = document.getElementById("autoPlayer");
   if(!player) return;
 
   if(player.paused){
+    userPausedMusic = false;
     tryAutoPlay();
   }else{
+    userPausedMusic = true;   // ✅ remember that the user intentionally paused
     player.pause();
   }
   updateMusicBtn();
@@ -440,13 +447,14 @@ document.addEventListener("click",e=>{
     if(entered.length===PASS.length){
       if(entered===PASS){
         unlockSound();
+        unlocked = true;
+
         document.getElementById("lock").classList.add("hidden");
         document.getElementById("popup").classList.remove("hidden");
         typeText(sets.sweet[Math.floor(Math.random()*sets.sweet.length)]);
 
-        // ✅ autoplay the MP3 right after unlock
+        // ✅ autoplay right after unlock
         tryAutoPlay();
-        updateMusicBtn();
 
       } else {
         entered=""; updateDots();
@@ -460,14 +468,23 @@ document.addEventListener("click",e=>{
   }
 });
 
-// Fallback: if iOS blocks the first attempt, any later tap will start it
+/*
+  ✅ FIXED FALLBACK:
+  Only helps iOS start music the first time AFTER unlock,
+  and never restarts it if you intentionally paused.
+*/
 document.addEventListener("click", ()=>{
   const player = document.getElementById("autoPlayer");
-  if(player && player.paused) {
+  if(!player) return;
+
+  // only after unlock, only if it never successfully started, and only if user didn't pause
+  if(unlocked && !musicEverStarted && !userPausedMusic && player.paused){
     tryAutoPlay();
-    updateMusicBtn();
   }
 });
+
+applyMusicDefaults();
+updateMusicBtn();
 </script>
 </body>
 </html>

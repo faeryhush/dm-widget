@@ -119,6 +119,7 @@ body{
 
 /* ---------- POPUP ---------- */
 .popup{
+  position:relative;
   background:#fff;
   border-radius:20px;
   border:2px solid var(--line);
@@ -135,6 +136,25 @@ body{
   font-family:'Press Start 2P', monospace;
   font-size:14px;
 }
+
+/* tiny mute toggle */
+.muteBtn{
+  position:absolute;
+  top:10px;
+  right:10px;
+  padding:6px 8px;
+  border-radius:999px;
+  border:2px solid var(--line);
+  background:rgba(242,169,199,.35);
+  font-family:'Press Start 2P', monospace;
+  font-size:7px;
+  line-height:1;
+  color:#fff;
+  -webkit-appearance:none;
+  appearance:none;
+  cursor:pointer;
+}
+.muteBtn:active{ transform:translateY(1px); }
 
 .popupBody{
   padding:18px 16px;
@@ -163,13 +183,13 @@ body{
 }
 
 .popupFooter button{
-  padding:14px 6px;              /* a touch more breathing room */
+  padding:14px 6px;
   background:none;
   border:none;
   width:100%;
   -webkit-appearance:none;
   appearance:none;
-  color:#fff;                    /* prevents iOS "blue button text" */
+  color:#fff; /* prevents iOS blue */
   text-align:center;
 }
 
@@ -180,12 +200,12 @@ body{
 .tag{
   font-family:'Press Start 2P', monospace;
   font-size:7px;
-  line-height:1.35;              /* helps 2-line label look nice */
+  line-height:1.35;
   padding:7px 8px;
   border-radius:999px;
   border:2px solid var(--line);
   background:rgba(242,169,199,.55);
-  color:#fff;                    /* white (swap to var(--pink) if you want pink text) */
+  color:#fff;
   display:inline-block;
   max-width:100%;
   white-space:normal;
@@ -224,6 +244,7 @@ body{
 
 <section class="popup hidden" id="popup">
   <div class="popupHeader">New Message</div>
+  <button class="muteBtn" id="muteBtn" type="button" aria-label="Toggle music">MUSIC: ON</button>
   <div class="popupBody" id="msg"></div>
   <div class="popupFooter">
     <button data-set="reassurance"><span class="tag">Reassurance</span></button>
@@ -233,6 +254,11 @@ body{
 </section>
 
 </div>
+
+<!-- Background music (you supply the file in your repo) -->
+<audio id="bgm" preload="auto" loop>
+  <source src="audio/bloodstream-stateless.mp3" type="audio/mpeg">
+</audio>
 
 <script>
 const PASS = "07242024";
@@ -267,7 +293,6 @@ function ensureAudio(){
   if(audioCtx.state==="suspended") audioCtx.resume();
 }
 
-/* clearer but still soft */
 function clickSound(freq=620){
   if(!audioCtx) return;
   const o=audioCtx.createOscillator(), g=audioCtx.createGain();
@@ -283,6 +308,7 @@ function unlockSound(){
   clickSound(520); setTimeout(()=>clickSound(780),90);
 }
 
+/* typing */
 let typingTimer=null;
 function typeText(text){
   const el=document.getElementById("msg");
@@ -297,9 +323,72 @@ function typeText(text){
       clearInterval(typingTimer);
       el.classList.remove("typing");
     }
-  }, 40); /* ← FASTER typing */
+  }, 40);
 }
 
+/* music (AUTO ON after unlock) */
+const bgm = document.getElementById("bgm");
+const muteBtn = document.getElementById("muteBtn");
+
+let bgmReady = false;   // becomes true after unlock
+let bgmMuted = false;   // default ON
+let bgmStarted = false;
+
+function updateMuteLabel(){
+  muteBtn.textContent = bgmMuted ? "MUSIC: OFF" : "MUSIC: ON";
+}
+
+function fadeTo(target=0.06, step=0.004, everyMs=120){
+  const dir = (bgm.volume < target) ? 1 : -1;
+  const t = setInterval(()=>{
+    const next = bgm.volume + dir*step;
+    if((dir===1 && next >= target) || (dir===-1 && next <= target)){
+      bgm.volume = Math.max(0, Math.min(1, target));
+      clearInterval(t);
+      return;
+    }
+    bgm.volume = Math.max(0, Math.min(1, next));
+  }, everyMs);
+}
+
+function startBgmIfAllowed(){
+  if(!bgmReady || bgmMuted || bgmStarted) return;
+  bgmStarted = true;
+  bgm.volume = 0;
+  bgm.play().then(()=>{
+    fadeTo(0.06);
+  }).catch(()=>{
+    // If play is blocked, allow retry on next tap.
+    bgmStarted = false;
+  });
+}
+
+function stopBgmSoft(){
+  if(!bgmStarted) return;
+  fadeTo(0, 0.006, 90);
+  setTimeout(()=>{
+    bgm.pause();
+    bgm.currentTime = 0;
+    bgmStarted = false;
+  }, 900);
+}
+
+muteBtn.addEventListener("click", (e)=>{
+  e.stopPropagation();
+  ensureAudio();
+  clickSound();
+  bgmMuted = !bgmMuted;
+  updateMuteLabel();
+  if(!bgmMuted){
+    startBgmIfAllowed();
+  } else {
+    stopBgmSoft();
+  }
+});
+
+updateMuteLabel();
+
+/* lock dots */
 const dots=document.getElementById("dots");
 for(let i=0;i<PASS.length;i++) dots.appendChild(document.createElement("div")).className="dot";
 let entered="";
@@ -312,6 +401,7 @@ document.addEventListener("click",e=>{
   ensureAudio();
   const k=e.target.closest("[data-k]");
   const b=e.target.closest("[data-set]");
+
   if(k){
     clickSound();
     if(k.dataset.k==="del"){entered=entered.slice(0,-1);updateDots();return;}
@@ -322,15 +412,26 @@ document.addEventListener("click",e=>{
         document.getElementById("lock").classList.add("hidden");
         document.getElementById("popup").classList.remove("hidden");
         typeText(sets.sweet[Math.floor(Math.random()*sets.sweet.length)]);
+
+        // music becomes available AFTER unlock, and is ON by default
+        bgmReady = true;
+        startBgmIfAllowed();
+
       } else {
         entered=""; updateDots();
       }
     }
   }
+
   if(b){
     clickSound();
     typeText(sets[b.dataset.set][Math.floor(Math.random()*sets[b.dataset.set].length)]);
   }
+});
+
+// If playback was blocked, retry on any later tap when music is ON:
+document.addEventListener("click", ()=>{
+  if(bgmReady && !bgmMuted) startBgmIfAllowed();
 });
 </script>
 </body>

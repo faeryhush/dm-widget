@@ -134,6 +134,33 @@ body{
   text-align:center;
   font-family:'Press Start 2P', monospace;
   font-size:14px;
+  position:relative;
+}
+
+/* small music control button */
+.musicBtn{
+  position:absolute;
+  right:10px;
+  top:10px;
+  width:34px;
+  height:26px;
+  border-radius:10px;
+  border:2px solid var(--line);
+  background:#fff;
+  color:#222;
+  font-family:'Press Start 2P', monospace;
+  font-size:10px;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  -webkit-appearance:none;
+  appearance:none;
+  padding:0;
+}
+.musicBtn:active{transform:translateY(1px)}
+.musicBtn.on{
+  background:rgba(242,169,199,.35);
 }
 
 .popupBody{
@@ -223,13 +250,15 @@ body{
 </section>
 
 <section class="popup hidden" id="popup">
-  <div class="popupHeader">New Message</div>
+  <div class="popupHeader">
+    New Message
+    <!-- tiny play/pause -->
+    <button class="musicBtn" id="musicBtn" type="button" aria-label="Toggle music">►</button>
+  </div>
 
-  <!-- popup body now contains message + auto-playing MP3 -->
   <div class="popupBody">
     <div id="msg"></div>
 
-    <!-- This plays automatically after unlock -->
     <audio id="autoPlayer" preload="auto">
       <source src="audio/bg-music.mp3.mp3" type="audio/mpeg">
     </audio>
@@ -283,14 +312,47 @@ function clickSound(freq=620){
   const o=audioCtx.createOscillator(), g=audioCtx.createGain();
   o.type="triangle";
   o.frequency.value=freq;
-  g.gain.setValueAtTime(.035,audioCtx.currentTime);
-  g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.08);
+  g.gain.setValueAtTime(.03,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.07);
   o.connect(g); g.connect(audioCtx.destination);
-  o.start(); o.stop(audioCtx.currentTime+.08);
+  o.start(); o.stop(audioCtx.currentTime+.07);
 }
 
 function unlockSound(){
   clickSound(520); setTimeout(()=>clickSound(780),90);
+}
+
+/* ---- softer, more "real typing" sound (noise + filter) ---- */
+function typeKeySound(){
+  if(!audioCtx) return;
+
+  // very short noise burst
+  const dur = 0.016; // seconds
+  const buffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * dur), audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for(let i=0;i<data.length;i++){
+    data[i] = (Math.random()*2-1) * (0.7 - (i/data.length)*0.6); // quick taper
+  }
+
+  const src = audioCtx.createBufferSource();
+  src.buffer = buffer;
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.frequency.value = 2200;      // "key clack" range
+  filter.Q.value = 1.1;
+
+  const g = audioCtx.createGain();
+  // softer than before
+  g.gain.setValueAtTime(0.006, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0008, audioCtx.currentTime + dur);
+
+  src.connect(filter);
+  filter.connect(g);
+  g.connect(audioCtx.destination);
+
+  src.start();
+  src.stop(audioCtx.currentTime + dur);
 }
 
 /* typing */
@@ -301,9 +363,16 @@ function typeText(text){
   el.classList.add("typing");
   let i=0;
   clearInterval(typingTimer);
+
   typingTimer=setInterval(()=>{
-    el.textContent+=text[i++]||"";
-    clickSound(480);
+    const ch = text[i++] || "";
+    el.textContent += ch;
+
+    // sound: skip most spaces, keep it soft + not *every* character
+    if(ch && ch !== " " && ch !== "\n"){
+      if(Math.random() < 0.85) typeKeySound();
+    }
+
     if(i>=text.length){
       clearInterval(typingTimer);
       el.classList.remove("typing");
@@ -324,13 +393,43 @@ function updateDots(){
 function tryAutoPlay(){
   const player = document.getElementById("autoPlayer");
   if(!player) return;
-  player.volume = 0.8;   // adjust as you like (0.0–1.0)
-  player.loop = true;    // remove if you don't want looping
+  player.volume = 0.8;
+  player.loop = true;
   player.play().catch(()=>{});
 }
 
+/* ---- music button ---- */
+const musicBtn = document.getElementById("musicBtn");
+function updateMusicBtn(){
+  const player = document.getElementById("autoPlayer");
+  if(!player) return;
+  const playing = !player.paused;
+  musicBtn.textContent = playing ? "❚❚" : "►";
+  musicBtn.classList.toggle("on", playing);
+  musicBtn.setAttribute("aria-label", playing ? "Pause music" : "Play music");
+}
+
+musicBtn.addEventListener("click",(e)=>{
+  e.stopPropagation(); // don't trigger other click handlers
+  ensureAudio();
+  const player = document.getElementById("autoPlayer");
+  if(!player) return;
+
+  if(player.paused){
+    tryAutoPlay();
+  }else{
+    player.pause();
+  }
+  updateMusicBtn();
+});
+
+document.getElementById("autoPlayer").addEventListener("play", updateMusicBtn);
+document.getElementById("autoPlayer").addEventListener("pause", updateMusicBtn);
+
+/* main click handler */
 document.addEventListener("click",e=>{
   ensureAudio();
+
   const k=e.target.closest("[data-k]");
   const b=e.target.closest("[data-set]");
 
@@ -347,6 +446,7 @@ document.addEventListener("click",e=>{
 
         // ✅ autoplay the MP3 right after unlock
         tryAutoPlay();
+        updateMusicBtn();
 
       } else {
         entered=""; updateDots();
@@ -363,7 +463,10 @@ document.addEventListener("click",e=>{
 // Fallback: if iOS blocks the first attempt, any later tap will start it
 document.addEventListener("click", ()=>{
   const player = document.getElementById("autoPlayer");
-  if(player && player.paused) tryAutoPlay();
+  if(player && player.paused) {
+    tryAutoPlay();
+    updateMusicBtn();
+  }
 });
 </script>
 </body>

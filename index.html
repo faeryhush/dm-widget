@@ -10,6 +10,7 @@
 <style>
 :root{
   --pink:#f2a9c7;
+  --pink2:rgba(242,169,199,.55);
   --bgpink:rgba(242,169,199,.45);
   --line:rgba(0,0,0,.18);
   --shadow:rgba(0,0,0,.12);
@@ -22,7 +23,7 @@ body{
   min-height:100vh;
   display:flex;
   justify-content:center;
-  align-items:flex-start;
+  align-items:flex-start; /* avoid iOS clipping */
   padding:24px;
   overflow-y:auto;
   background:
@@ -35,7 +36,12 @@ body{
     );
 }
 
-.wrap{width:420px; max-width:95vw}
+/* push UI lower but keep centered */
+.wrap{
+  width:420px;
+  max-width:95vw;
+  margin: 110px auto 40px;
+}
 
 /* ---------- LOCK ---------- */
 .lock{
@@ -98,15 +104,21 @@ body{
   padding:14px 0;
   font-family:'Press Start 2P', monospace;
   font-size:14px;
-  border-radius:12px;
+  border-radius:14px;
   border:2px solid var(--line);
   background:var(--pink);
   color:#fff;
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,.08);
+}
+
+.key:active{
+  transform: translateY(1px);
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,.08);
 }
 
 .key.alt{
   background:#f7f7f7;
-  color:#333;
+  color:#222;
   font-size:9px;
 }
 
@@ -120,14 +132,13 @@ body{
   box-shadow:14px 14px 0 rgba(242,169,199,.55);
   overflow:hidden;
 
-  /* slightly smaller like reference */
-  width: 360px;
+  width: 360px;       /* slightly smaller like reference */
   max-width: 92vw;
   margin: 0 auto;
 }
 
 .popupHeader{
-  background:rgba(242,169,199,.55);
+  background:var(--pink2);
   padding:14px;
   text-align:center;
   font-family:'Press Start 2P', monospace;
@@ -140,6 +151,7 @@ body{
   font-family:'Press Start 2P', monospace;
   font-size:10px;
   line-height:2;
+  color:#111;
 }
 
 .typing::after{
@@ -164,19 +176,41 @@ body{
   padding:12px 6px;
   background:none;
   border:none;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  /* iOS “blue button text” prevention */
+  -webkit-appearance:none;
+  appearance:none;
+  color: inherit;
 }
 
 .popupFooter button+button{
   border-left:2px solid var(--line);
 }
 
+.popupFooter button:link,
+.popupFooter button:visited,
+.popupFooter button:hover,
+.popupFooter button:active{
+  color: inherit;
+}
+
 .tag{
   font-family:'Press Start 2P', monospace;
-  font-size:8px;
-  padding:6px 8px;
+  font-size:7px;
+  line-height:1.2;
+  padding:7px 8px;
   border-radius:999px;
   border:2px solid var(--line);
-  background:rgba(242,169,199,.3);
+  background:rgba(242,169,199,.55);
+  color:#222;
+  display:inline-block;
+  max-width:100%;
+  text-align:center;
+  white-space:normal; /* allow wrap */
 }
 
 .hidden{display:none}
@@ -226,33 +260,89 @@ body{
 </div>
 
 <script>
-const PASS="07242024";
+/* ----------------- CONFIG ----------------- */
+const PASS = "07242024";
 
-const sets={
-  reassurance:[
+/* keep these totally safe for Carrd/GH pages */
+const sets = {
+  reassurance: [
     "You are safe with me.",
     "You are not too much.",
     "I am here, even when things feel heavy."
   ],
-  what:[
+  what: [
     "I love how thoughtful you are.",
     "I love the way your mind works.",
     "I love how deeply you care."
   ],
-  sweet:[
+  sweet: [
     "You are my favorite person.",
     "I like being yours.",
     "I am really glad I get to love you."
   ]
 };
 
-const dots=document.getElementById("dots");
-const err=document.getElementById("err");
-const lock=document.getElementById("lock");
-const popup=document.getElementById("popup");
-const msg=document.getElementById("msg");
+/* ----------------- AUDIO (no files) ----------------- */
+/* Note: iOS Safari allows audio only after user interaction. */
+let audioCtx = null;
 
-let entered="";
+function ensureAudio(){
+  if (!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === "suspended") audioCtx.resume();
+}
+
+function beep({freq=440, dur=0.06, type="square", gain=0.02} = {}){
+  if (!audioCtx) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  g.gain.value = gain;
+  o.connect(g);
+  g.connect(audioCtx.destination);
+  o.start();
+  o.stop(audioCtx.currentTime + dur);
+}
+
+function clickSound(){
+  // cute click: two tiny blips
+  beep({freq:920, dur:0.025, type:"square", gain:0.018});
+  setTimeout(()=>beep({freq:720, dur:0.03, type:"square", gain:0.014}), 20);
+}
+
+function unlockSound(){
+  // little “unlock jingle”
+  beep({freq:660, dur:0.06, type:"square", gain:0.02});
+  setTimeout(()=>beep({freq:880, dur:0.06, type:"square", gain:0.02}), 70);
+  setTimeout(()=>beep({freq:1100, dur:0.07, type:"square", gain:0.02}), 140);
+}
+
+let typingTimer = null;
+function typingTick(start){
+  if(!audioCtx) return;
+  if(start){
+    if(typingTimer) clearInterval(typingTimer);
+    typingTimer = setInterval(()=>{
+      // soft “tick”
+      beep({freq:540 + Math.random()*80, dur:0.015, type:"square", gain:0.010});
+    }, 45);
+  } else {
+    if(typingTimer) clearInterval(typingTimer);
+    typingTimer = null;
+  }
+}
+
+/* ----------------- UI LOGIC ----------------- */
+const dots = document.getElementById("dots");
+const err  = document.getElementById("err");
+const lock = document.getElementById("lock");
+const popup= document.getElementById("popup");
+const msg  = document.getElementById("msg");
+
+let entered = "";
+let isTyping = false;
 
 for(let i=0;i<PASS.length;i++){
   const d=document.createElement("div");
@@ -261,58 +351,73 @@ for(let i=0;i<PASS.length;i++){
 }
 
 function updateDots(){
-  [...dots.children].forEach((d,i)=>d.classList.toggle("filled",i<entered.length));
+  [...dots.children].forEach((d,i)=>d.classList.toggle("filled", i < entered.length));
 }
 
-function type(text){
-  msg.textContent="";
+function typeText(text){
+  msg.textContent = "";
   msg.classList.add("typing");
   let i=0;
-  const t=setInterval(()=>{
-    msg.textContent+=text[i++] || "";
-    if(i>=text.length){
+
+  isTyping = true;
+  typingTick(true);
+
+  const t = setInterval(()=>{
+    msg.textContent += text[i++] || "";
+    if(i >= text.length){
       clearInterval(t);
       msg.classList.remove("typing");
+      isTyping = false;
+      typingTick(false);
     }
-  },18);
+  }, 22);
 }
 
-document.addEventListener("click",e=>{
-  const btn = e.target.closest("[data-k]");
-  if(!btn) return;
+document.addEventListener("click", (e)=>{
+  // first tap: unlock audio on iOS
+  ensureAudio();
 
-  const k = btn.dataset.k;
+  const keyBtn = e.target.closest("[data-k]");
+  const setBtn = e.target.closest("[data-set]");
 
-  if(k==="del"){
-    entered=entered.slice(0,-1);
-    updateDots();
+  // keypad presses
+  if(keyBtn){
+    clickSound();
+    const k = keyBtn.dataset.k;
+
+    if(k === "del"){
+      entered = entered.slice(0,-1);
+      updateDots();
+      return;
+    }
+
+    if(entered.length < PASS.length){
+      entered += k;
+      updateDots();
+    }
+
+    if(entered.length === PASS.length){
+      if(entered === PASS){
+        unlockSound();
+        lock.classList.add("hidden");
+        popup.classList.remove("hidden");
+        typeText(sets.sweet[Math.floor(Math.random()*sets.sweet.length)]);
+      } else {
+        err.textContent = "Incorrect";
+        entered = "";
+        updateDots();
+        setTimeout(()=>err.textContent="", 1000);
+      }
+    }
     return;
   }
 
-  if(entered.length < PASS.length){
-    entered += k;
-    updateDots();
+  // category buttons
+  if(setBtn){
+    clickSound();
+    const arr = sets[setBtn.dataset.set];
+    typeText(arr[Math.floor(Math.random()*arr.length)]);
   }
-
-  if(entered.length === PASS.length){
-    if(entered === PASS){
-      lock.classList.add("hidden");
-      popup.classList.remove("hidden");
-      type(sets.sweet[Math.floor(Math.random()*sets.sweet.length)]);
-    } else {
-      err.textContent="Incorrect";
-      entered="";
-      updateDots();
-      setTimeout(()=>err.textContent="",1000);
-    }
-  }
-});
-
-document.querySelectorAll("[data-set]").forEach(b=>{
-  b.addEventListener("click", ()=>{
-    const arr = sets[b.dataset.set];
-    type(arr[Math.floor(Math.random()*arr.length)]);
-  });
 });
 
 updateDots();

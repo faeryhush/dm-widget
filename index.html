@@ -81,7 +81,6 @@ body{
   border-radius:50%;
   border:2px solid var(--line);
 }
-
 .dot.filled{background:var(--pink)}
 
 .err{
@@ -107,14 +106,13 @@ body{
   border:2px solid var(--line);
   background:var(--pink);
   color:#fff;
+  -webkit-tap-highlight-color: transparent;
 }
-
 .key.alt{
   background:#f7f7f7;
   color:#222;
   font-size:9px;
 }
-
 .spacer{visibility:hidden}
 
 /* ---------- POPUP ---------- */
@@ -127,21 +125,10 @@ body{
   max-width:92vw;
   position:relative;
 
-  /* blush glow + sticker shadow */
+  /* sticker-ish shadow + soft blush ring */
   box-shadow:
     14px 14px 0 rgba(242,169,199,.55),
     0 0 0 6px rgba(242,169,199,.10);
-}
-
-/* subtle sparkle overlay */
-.popup::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  background: radial-gradient(rgba(255,255,255,.35) 1px, transparent 1px);
-  background-size:10px 10px;
-  opacity:.22;
 }
 
 .popupHeader{
@@ -179,7 +166,7 @@ body{
   flex-direction:column;
   align-items:center;
   gap:6px;
-  padding-right:44px;
+  padding-right:44px; /* leave room for music button */
   position:relative;
   z-index:3;
 }
@@ -199,7 +186,7 @@ body{
   letter-spacing:.2px;
 }
 
-/* music control */
+/* music control button */
 .musicBtn{
   position:absolute;
   right:10px;
@@ -278,7 +265,10 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
+
+  -webkit-tap-highlight-color: transparent;
 }
+
 .popupFooter button+button{ border-left:2px solid var(--line); }
 
 .tag{
@@ -290,15 +280,15 @@ body{
   border:2px solid var(--line);
   background:rgba(242,169,199,.55);
   color:#fff;
+
   display:inline-flex;
   align-items:center;
   justify-content:center;
   text-align:center;
   max-width:100%;
   white-space:normal;
-  min-height:28px;
+  min-height:30px;
 
-  /* pressable */
   box-shadow:0 3px 0 rgba(0,0,0,.12);
 }
 .popupFooter button:active .tag{
@@ -322,26 +312,24 @@ body{
   </div>
 
   <div class="pad">
-    <button class="key" data-k="1">1</button>
-    <button class="key" data-k="2">2</button>
-    <button class="key" data-k="3">3</button>
-    <button class="key" data-k="4">4</button>
-    <button class="key" data-k="5">5</button>
-    <button class="key" data-k="6">6</button>
-    <button class="key" data-k="7">7</button>
-    <button class="key" data-k="8">8</button>
-    <button class="key" data-k="9">9</button>
+    <button class="key" data-k="1" type="button">1</button>
+    <button class="key" data-k="2" type="button">2</button>
+    <button class="key" data-k="3" type="button">3</button>
+    <button class="key" data-k="4" type="button">4</button>
+    <button class="key" data-k="5" type="button">5</button>
+    <button class="key" data-k="6" type="button">6</button>
+    <button class="key" data-k="7" type="button">7</button>
+    <button class="key" data-k="8" type="button">8</button>
+    <button class="key" data-k="9" type="button">9</button>
     <div class="spacer"></div>
-    <button class="key" data-k="0">0</button>
-    <button class="key alt" data-k="del">Del</button>
+    <button class="key" data-k="0" type="button">0</button>
+    <button class="key alt" data-k="del" type="button">Del</button>
   </div>
 </section>
 
 <section class="popup hidden" id="popup">
   <div class="popupHeader">
-    <div class="windowDots" aria-hidden="true">
-      <span></span><span></span><span></span>
-    </div>
+    <div class="windowDots" aria-hidden="true"><span></span><span></span><span></span></div>
 
     <div class="hdrLeft">
       <div>New Message</div>
@@ -369,54 +357,189 @@ body{
 </div>
 
 <script>
+/* ---------- CONFIG ---------- */
 const PASS = "07242024";
 
-/* together date: Aug 11, 2025 */
+/* together date */
 const START_DATE = "2025-08-11";
 
-const sets = {
+/* his timezone */
+const TZ = "Europe/London"; // Walsall (DST-safe)
+
+/* pinned (exactly as requested) */
+const PINNED = `Hello, my sweet prince.
+My red string.
+I made this just for you.
+You can visit whenever you want.`;
+
+/* ---------- MESSAGE BANKS ---------- */
+/* Reassurance + What I Love are NOT time-based */
+const SETS = {
   reassurance: [
-    "Sometimes I don’t think you realize the depth of what you've done to me. I am no longer able to look at another and feel any sort of wanting. It’s you, or it’s no one.",
-    "My heart belongs to you, and only you forever. If my future isn’t with you, I would rather be alone. There is no one else.",
-    "I am here. I will always be here.",
-    "You do not have to carry everything alone.",
-    "I believe you."
+    "You’re safe here. Nothing is required of you.",
+    "You don’t have to be perfect to be loved.",
+    "I’m still here. I’m not going anywhere.",
+    "Breathe. Slow down. Come back to me.",
+    "If today feels heavy, you don’t have to carry it alone.",
+    "Start small. One thing at a time. I’ve got you.",
+    "I’m proud of you for continuing.",
+    "Come here. Let the world be quiet for a second.",
+    "You are not a burden. Not to me.",
+    "You’re allowed to have hard days."
   ],
+
   what: [
-    "I love your eyes. They're such a pretty shade of green.",
-    "I love your hair, and the way your messy 'lil curls fall over your face. You always say that your hair is messy, but I love how it looks.",
-    "I love your patience.",
-    "I love how deeply you care.",
-    "I love how you keep trying."
-  ],
-  sweet: [
-    "I don’t remember what my thoughts sounded like before they learned your name. You are woven into who I am, and I cannot imagine a life without you now.",
-    "From the moment we met, I knew it was only a matter of time before you sunk deep beneath my bones and consumed me whole. I couldn't stop loving you even if I tried to.",
-    "I am really glad I get to love you.",
-    "Come here. I owe you a hug.",
-    "You make my days softer."
+    "I love how thoughtful you are.",
+    "I love your mind. The way you notice things other people miss.",
+    "I love how gentle you can be.",
+    "I love your laugh. It’s my favorite sound in my head.",
+    "I love the way you try, even when it’s hard.",
+    "I love your steadiness—especially on days you don’t feel steady.",
+    "I love the softness you hide.",
+    "I love you in the quiet. Especially in the quiet.",
+    "I love the way you care so deeply.",
+    "I love how you keep showing up."
   ]
 };
 
-/* ---- tracker (combo) ---- */
-function startOfDay(d){
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+/* Something Sweet IS time-of-day based (UK/Walsall) */
+const SWEET_TOD = {
+  morning: [
+    "Good morning, my sweet prince.",
+    "Good morning, love. I hope you slept okay.",
+    "Wake up, my red string. I’m here.",
+    "I wish I could pull you close before your day starts.",
+    "Morning. Be good today… or don’t."
+  ],
+  afternoon: [
+    "You crossed my mind. You never really leave it.",
+    "I hope you’ve eaten something today, my love.",
+    "I miss you. Quietly. Constantly.",
+    "Just a little reminder: you’re mine to adore.",
+    "I wish I could steal five minutes of your time and keep it."
+  ],
+  evening: [
+    "I missed you today.",
+    "Come sit with me, my sweet prince.",
+    "I wish I was there—just to be near you.",
+    "Let the day end in my arms, even if it’s only words.",
+    "If I could, I’d pull you in and keep you there."
+  ],
+  night: [
+    "Trouble sleeping, my love?",
+    "If you’re still awake, I’m here.",
+    "Come closer. Just breathe with me.",
+    "I’d hold you until you fell asleep.",
+    "It’s quiet. I like thinking of you like this."
+  ]
+};
+
+/* Return messages (when he comes back) */
+const RETURN = {
+  soon: [
+    "Back so soon?",
+    "There you are.",
+    "Couldn’t stay away, hm?"
+  ],
+  sameDay: [
+    "I missed you.",
+    "I’m glad you came back.",
+    "Come here."
+  ],
+  long: [
+    "I missed you. I really did.",
+    "It’s nice to see you again, my love.",
+    "I was hoping you’d come back."
+  ]
+};
+
+/* ---------- ANNIVERSARY COPY (month-by-month) ---------- */
+const ANNIVERSARY_MONTHLY = {
+  1:  "Happy 1 month anniversary, my love.",
+  2:  "Happy 2 month anniversary. Still you.",
+  3:  "Three months with you. I’m grateful. Happy anniversary.",
+  4:  "Happy 4 month anniversary, my red string.",
+  5:  "Five months. You feel like home. Happy anniversary.",
+  6:  "Happy 6 month anniversary, my love.",
+  7:  "Seven months with you. Still choosing you. Happy anniversary.",
+  8:  "Happy 8 month anniversary, my love.",
+  9:  "Nine months. And you still make the world softer.",
+  10: "Happy 10 month anniversary, my love.",
+  11: "Eleven months with you. I’m proud of us.",
+  12: "One year with you. I’d do it all again."
+};
+
+function yearlyAnniversaryText(years){
+  if(years <= 1) return "One year with you. I’d do it all again.";
+  return `Happy ${years} year anniversary, my love.`;
 }
+
+/* ---------- TIME HELPERS ---------- */
+function ukNow(){
+  return new Date(new Date().toLocaleString("en-US", { timeZone: TZ }));
+}
+function ukDateKey(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+function timeBucketUK(){
+  const h = ukNow().getHours();
+  if(h >= 5 && h <= 11) return "morning";
+  if(h >= 12 && h <= 16) return "afternoon";
+  if(h >= 17 && h <= 21) return "evening";
+  return "night";
+}
+
+function monthsSinceStartUK(){
+  const s = new Date(new Date(START_DATE + "T00:00:00").toLocaleString("en-US",{timeZone:TZ}));
+  const n = ukNow();
+  return (n.getFullYear()-s.getFullYear())*12 + (n.getMonth()-s.getMonth());
+}
+function yearsSinceStartUK(){
+  const s = new Date(new Date(START_DATE + "T00:00:00").toLocaleString("en-US",{timeZone:TZ}));
+  const n = ukNow();
+  let y = n.getFullYear() - s.getFullYear();
+  const annThisYear = new Date(n.getFullYear(), s.getMonth(), s.getDate());
+  if(n < annThisYear) y -= 1;
+  return Math.max(0, y);
+}
+function isYearlyAnniversaryUK(){
+  const s = new Date(new Date(START_DATE + "T00:00:00").toLocaleString("en-US",{timeZone:TZ}));
+  const n = ukNow();
+  return n.getMonth() === s.getMonth() && n.getDate() === s.getDate();
+}
+function isMonthlyAnniversaryUK(){
+  const s = new Date(new Date(START_DATE + "T00:00:00").toLocaleString("en-US",{timeZone:TZ}));
+  const n = ukNow();
+  return n.getDate() === s.getDate(); // the 11th
+}
+function getAnniversaryMessage(){
+  if(isYearlyAnniversaryUK()){
+    const years = yearsSinceStartUK();
+    return yearlyAnniversaryText(years);
+  }
+  if(isMonthlyAnniversaryUK()){
+    const m = Math.max(1, monthsSinceStartUK());
+    return ANNIVERSARY_MONTHLY[m] || `Happy ${m} month anniversary, my love.`;
+  }
+  return "";
+}
+
+/* ---------- TRACKER (combo: y/m/d + total days) ---------- */
+function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 function diffYMD(from, to){
   let y = to.getFullYear() - from.getFullYear();
   let m = to.getMonth() - from.getMonth();
   let d = to.getDate() - from.getDate();
-
   if(d < 0){
     m -= 1;
     const prevMonth = new Date(to.getFullYear(), to.getMonth(), 0);
     d += prevMonth.getDate();
   }
-  if(m < 0){
-    y -= 1;
-    m += 12;
-  }
-  return {y,m,d};
+  if(m < 0){ y -= 1; m += 12; }
+  return { y, m, d };
 }
 function updateDayTracker(){
   const el = document.getElementById("dayTracker");
@@ -429,14 +552,12 @@ function updateDayTracker(){
     el.textContent = `♡ 0y 0m 0d • 0 days ♡`;
     return;
   }
-
   const {y,m,d} = diffYMD(start, now);
   const totalDays = Math.floor((now - start) / 86400000);
-
   el.textContent = `♡ ${y}y ${m}m ${d}d • ${totalDays} days ♡`;
 }
 
-/* ----- audio context ----- */
+/* ---------- AUDIO (click + typing + music) ---------- */
 let audioCtx=null;
 function ensureAudio(){
   if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
@@ -459,7 +580,7 @@ function unlockSound(){
   clickSound(520); setTimeout(()=>clickSound(780),90);
 }
 
-/* typing sound */
+/* softer typing sound */
 function typeKeySound(){
   if(!audioCtx) return;
 
@@ -490,38 +611,6 @@ function typeKeySound(){
   src.stop(audioCtx.currentTime + dur);
 }
 
-/* typing */
-let typingTimer=null;
-function typeText(text){
-  const el=document.getElementById("msg");
-  el.textContent="";
-  el.classList.add("typing");
-  let i=0;
-  clearInterval(typingTimer);
-
-  typingTimer=setInterval(()=>{
-    const ch = text[i++] || "";
-    el.textContent += ch;
-
-    if(ch && ch !== " " && ch !== "\n"){
-      if(Math.random() < 0.85) typeKeySound();
-    }
-
-    if(i>=text.length){
-      clearInterval(typingTimer);
-      el.classList.remove("typing");
-    }
-  }, 40);
-}
-
-/* lock dots */
-const dots=document.getElementById("dots");
-for(let i=0;i<PASS.length;i++) dots.appendChild(document.createElement("div")).className="dot";
-let entered="";
-function updateDots(){
-  [...dots.children].forEach((d,i)=>d.classList.toggle("filled",i<entered.length));
-}
-
 /* ---- music control / autoplay logic ---- */
 let unlocked = false;
 let userPausedMusic = false;
@@ -530,7 +619,7 @@ let musicEverStarted = false;
 function applyMusicDefaults(){
   const player = document.getElementById("autoPlayer");
   if(!player) return;
-  player.volume = 0.45; /* tweak 0.35–0.6 */
+  player.volume = 0.45;  // tweak 0.35–0.6
   player.loop = true;
 }
 
@@ -573,8 +662,137 @@ musicBtn.addEventListener("click",(e)=>{
 document.getElementById("autoPlayer").addEventListener("play", updateMusicBtn);
 document.getElementById("autoPlayer").addEventListener("pause", updateMusicBtn);
 
-/* main click handler */
-document.addEventListener("click",e=>{
+/*
+  iOS fallback:
+  Only helps iOS start music the first time AFTER unlock,
+  and never restarts it if you intentionally paused.
+*/
+document.addEventListener("click", ()=>{
+  const player = document.getElementById("autoPlayer");
+  if(!player) return;
+
+  if(unlocked && !musicEverStarted && !userPausedMusic && player.paused){
+    tryAutoPlay();
+  }
+});
+
+/* ---------- TYPING (hesitation every other message) ---------- */
+let typingTimer=null;
+let messageIndex=0;
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function pickPauseIndex(text){
+  const points=[];
+  for(let i=10;i<text.length-10;i++){
+    const ch=text[i];
+    if(ch==="."||ch===","||ch==="!"||ch==="?"||ch==="…") points.push(i+1);
+  }
+  if(points.length) return points[Math.floor(Math.random()*points.length)];
+  return Math.floor(text.length*0.55);
+}
+
+function typeText(text, onDone){
+  const el=document.getElementById("msg");
+  el.textContent="";
+  el.classList.add("typing");
+
+  messageIndex += 1;
+  const doHesitate = (messageIndex % 2 === 0); // every other message
+  const pauseAt = doHesitate ? pickPauseIndex(text) : -1;
+  let paused=false;
+  let i=0;
+
+  clearInterval(typingTimer);
+  typingTimer=setInterval(step, 40);
+
+  function step(){
+    if(pauseAt !== -1 && !paused && i === pauseAt){
+      paused=true;
+      clearInterval(typingTimer);
+      setTimeout(()=>{ typingTimer=setInterval(step,40); }, 520);
+      return;
+    }
+
+    const ch = text[i++] || "";
+    el.textContent += ch;
+
+    if(ch && ch !== " " && ch !== "\n"){
+      if(Math.random() < 0.85) typeKeySound();
+    }
+
+    if(i>=text.length){
+      clearInterval(typingTimer);
+      el.classList.remove("typing");
+      if(typeof onDone === "function") onDone();
+    }
+  }
+}
+
+/* ---------- RETURN LOGIC (with once-per-UK-day cap) ---------- */
+function getReturnMessage(){
+  const now = Date.now();
+  const lastKey = "shyfaery_last_visit_ts_v3";
+  const shownKey = "shyfaery_return_shown_day_v3";
+
+  const last = Number(localStorage.getItem(lastKey) || 0);
+  localStorage.setItem(lastKey, String(now));
+
+  if(!last) return "";
+
+  const todayUK = ukDateKey(ukNow());
+  const shownDay = localStorage.getItem(shownKey) || "";
+
+  // cap: show at most once per UK day
+  if(shownDay === todayUK) return "";
+
+  const mins = (now - last) / 60000;
+
+  let msg = "";
+  if(mins <= 15) msg = pick(RETURN.soon);
+  else if(mins <= 12*60) msg = pick(RETURN.sameDay);
+  else msg = pick(RETURN.long);
+
+  localStorage.setItem(shownKey, todayUK);
+  return msg;
+}
+
+/* ---------- FIRST BUTTON PRESS GREETING ---------- */
+let firstButtonAfterUnlock = true;
+
+/* ---------- LOCK DOTS ---------- */
+const dots=document.getElementById("dots");
+for(let i=0;i<PASS.length;i++) dots.appendChild(document.createElement("div")).className="dot";
+let entered="";
+function updateDots(){
+  [...dots.children].forEach((d,i)=>d.classList.toggle("filled",i<entered.length));
+}
+
+/* ---------- UNLOCK FLOW ---------- */
+function showAfterUnlock(){
+  document.getElementById("lock").classList.add("hidden");
+  document.getElementById("popup").classList.remove("hidden");
+
+  updateDayTracker();
+  setInterval(updateDayTracker, 60*1000);
+
+  const ann = getAnniversaryMessage(); // replaces pinned that day
+  const first = ann || PINNED;
+  const ret = getReturnMessage();
+
+  firstButtonAfterUnlock = true;
+
+  typeText(first, ()=>{
+    if(ret){
+      setTimeout(()=>typeText(ret), 420);
+    }
+  });
+
+  tryAutoPlay();
+}
+
+/* ---------- MAIN CLICK HANDLER ---------- */
+document.addEventListener("click",(e)=>{
   ensureAudio();
 
   const k=e.target.closest("[data-k]");
@@ -582,40 +800,54 @@ document.addEventListener("click",e=>{
 
   if(k){
     clickSound();
-    if(k.dataset.k==="del"){entered=entered.slice(0,-1);updateDots();return;}
-    if(entered.length<PASS.length){entered+=k.dataset.k;updateDots();}
+
+    const val=k.dataset.k;
+    if(val==="del"){
+      entered=entered.slice(0,-1);
+      updateDots();
+      return;
+    }
+
+    if(entered.length<PASS.length){
+      entered+=val;
+      updateDots();
+    }
+
     if(entered.length===PASS.length){
       if(entered===PASS){
         unlockSound();
-        unlocked = true;
-
-        document.getElementById("lock").classList.add("hidden");
-        document.getElementById("popup").classList.remove("hidden");
-
-        updateDayTracker();
-        setInterval(updateDayTracker, 60 * 1000);
-
-        typeText(sets.sweet[Math.floor(Math.random()*sets.sweet.length)]);
-        tryAutoPlay();
+        unlocked=true;
+        showAfterUnlock();
       } else {
-        entered=""; updateDots();
+        document.getElementById("err").textContent="Wrong code.";
       }
+      entered="";
+      updateDots();
     }
   }
 
-  if(b){
+  if(b && unlocked){
     clickSound();
-    typeText(sets[b.dataset.set][Math.floor(Math.random()*sets[b.dataset.set].length)]);
-  }
-});
 
-/* iOS fallback: only start music once AFTER unlock, never restart if user paused */
-document.addEventListener("click", ()=>{
-  const player = document.getElementById("autoPlayer");
-  if(!player) return;
+    // first button press after unlock ALWAYS gives a time-based Sweet greeting
+    if(firstButtonAfterUnlock){
+      firstButtonAfterUnlock = false;
+      const bucket = timeBucketUK();
+      const pool = SWEET_TOD[bucket] || SWEET_TOD.evening;
+      typeText(pick(pool));
+      return;
+    }
 
-  if(unlocked && !musicEverStarted && !userPausedMusic && player.paused){
-    tryAutoPlay();
+    const cat = b.dataset.set; // reassurance | what | sweet
+
+    if(cat === "sweet"){
+      const bucket = timeBucketUK();
+      const pool = SWEET_TOD[bucket] || SWEET_TOD.evening;
+      typeText(pick(pool));
+    } else {
+      const pool = SETS[cat] || SETS.reassurance;
+      typeText(pick(pool));
+    }
   }
 });
 

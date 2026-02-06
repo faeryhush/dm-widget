@@ -122,12 +122,29 @@ body{
   background:#fff;
   border-radius:20px;
   border:2px solid var(--line);
-  box-shadow:14px 14px 0 rgba(242,169,199,.55);
   overflow:hidden;
   width:360px;
   max-width:92vw;
+
+  position:relative; /* for overlays */
+  /* ✅ blush glow + your original sticker shadow */
+  box-shadow:
+    14px 14px 0 rgba(242,169,199,.55),
+    0 0 0 6px rgba(242,169,199,.10);
 }
 
+/* ✅ subtle sparkle / grain overlay */
+.popup::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background: radial-gradient(rgba(255,255,255,.35) 1px, transparent 1px);
+  background-size:10px 10px;
+  opacity:.22;
+}
+
+/* header */
 .popupHeader{
   background:var(--pink2);
   padding:14px;
@@ -135,21 +152,41 @@ body{
   font-family:'Press Start 2P', monospace;
   font-size:14px;
   position:relative;
+  z-index:2; /* above sparkle overlay */
 }
 
-/* header stack (title + tracker) */
-/* IMPORTANT: pad right so it never sits under the music button */
+/* ✅ cute window dots */
+.windowDots{
+  position:absolute;
+  left:12px;
+  top:12px;
+  display:flex;
+  gap:6px;
+  z-index:3;
+}
+.windowDots span{
+  width:10px; height:10px;
+  border-radius:50%;
+  border:2px solid var(--line);
+  background:rgba(255,255,255,.75);
+}
+.windowDots span:nth-child(1){ background:rgba(242,169,199,.60); }
+.windowDots span:nth-child(2){ background:rgba(255,255,255,.78); }
+.windowDots span:nth-child(3){ background:rgba(242,169,199,.35); }
+
+/* title + tracker stack */
+/* pad right so it never sits under music button */
 .hdrLeft{
   display:flex;
   flex-direction:column;
   align-items:center;
   gap:6px;
-  padding-right:44px; /* leaves room for music button */
+  padding-right:44px;
   position:relative;
-  z-index:1;
+  z-index:3;
 }
 
-/* day tracker pill */
+/* tracker pill */
 .dayTracker{
   font-family:'Press Start 2P', monospace;
   font-size:8px;
@@ -157,14 +194,15 @@ body{
   padding:6px 8px;
   border-radius:999px;
   border:2px solid var(--line);
-  background:rgba(255,255,255,.85);
+  background:rgba(255,255,255,.90);
   color:#222;
   max-width:260px;
   text-align:center;
   white-space:normal;
+  letter-spacing:.2px;
 }
 
-/* small music control button */
+/* music control button */
 .musicBtn{
   position:absolute;
   right:10px;
@@ -174,7 +212,7 @@ body{
   border-radius:10px;
   border:2px solid var(--line);
   background:#fff;
-  color:#222 !important;          /* ✅ no iOS blue */
+  color:#222 !important; /* ✅ prevent iOS blue */
   font-family:'Press Start 2P', monospace;
   font-size:10px;
   line-height:1;
@@ -184,7 +222,7 @@ body{
   -webkit-appearance:none;
   appearance:none;
   padding:0;
-  z-index:5;                      /* ✅ above header stack */
+  z-index:6; /* ✅ above everything */
   -webkit-tap-highlight-color: transparent;
 }
 .musicBtn:active{transform:translateY(1px)}
@@ -196,6 +234,19 @@ body{
   font-family:'Press Start 2P', monospace;
   font-size:10px;
   line-height:2;
+  position:relative;
+  z-index:2;
+
+  /* ✅ "note" feel: faint lines + soft inner border */
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(242,169,199,.10) 0px,
+      rgba(242,169,199,.10) 2px,
+      transparent 2px,
+      transparent 18px
+    );
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,.06);
 }
 
 .typing::after{
@@ -214,9 +265,11 @@ body{
   display:grid;
   grid-template-columns:1fr 1fr 1fr;
   border-top:2px solid var(--line);
+  position:relative;
+  z-index:2;
 }
 
-/* make footer buttons flex-center so tags never squish weird */
+/* footer buttons flex-center so pills never squish */
 .popupFooter button{
   padding:14px 6px;
   background:none;
@@ -227,7 +280,7 @@ body{
   color:#fff; /* prevents iOS blue */
   text-align:center;
 
-  display:flex;               /* ✅ center the pill */
+  display:flex;
   align-items:center;
   justify-content:center;
 }
@@ -239,22 +292,96 @@ body{
 .tag{
   font-family:'Press Start 2P', monospace;
   font-size:7px;
-  line-height:1.55;           /* ✅ nicer 2-line spacing */
-  padding:8px 10px;           /* ✅ a bit more room */
+  line-height:1.55;
+  padding:8px 10px;
   border-radius:999px;
   border:2px solid var(--line);
   background:rgba(242,169,199,.55);
   color:#fff;
-  display:inline-flex;        /* ✅ stable multi-line pill */
+
+  display:inline-flex;
   align-items:center;
   justify-content:center;
   text-align:center;
   max-width:100%;
   white-space:normal;
-  min-height:28px;            /* ✅ prevents “smoosh” */
+  min-height:28px;
+
+  /* ✅ pressable */
+  box-shadow:0 3px 0 rgba(0,0,0,.12);
+}
+.popupFooter button:active .tag{
+  transform:translateY(2px);
+  box-shadow:0 1px 0 rgba(0,0,0,.12);
 }
 
 .hidden{display:none}
+
+/* --- kawaii heart pop --- */
+.heartPop{
+  position:absolute;
+  left: var(--x, 50%);
+  top:  var(--y, 50%);
+  transform: translate(-50%,-50%) scale(.6);
+  width:18px;
+  height:18px;
+  pointer-events:none;
+  opacity:0;
+  filter: drop-shadow(0 2px 0 rgba(0,0,0,.12));
+  animation: heartPop 900ms cubic-bezier(.2,1.1,.25,1) forwards;
+  z-index:10;
+}
+.heartPop::before,
+.heartPop::after{
+  content:"";
+  position:absolute;
+  width:10px;
+  height:10px;
+  background: rgba(242,169,199,.95);
+  border:2px solid rgba(0,0,0,.12);
+  border-radius:999px;
+  top:0;
+}
+.heartPop::before{ left:4px; }
+.heartPop::after{ left:0; }
+
+.heartPop .tail{
+  position:absolute;
+  left:4px;
+  top:6px;
+  width:10px;
+  height:10px;
+  background: rgba(242,169,199,.95);
+  border:2px solid rgba(0,0,0,.12);
+  transform: rotate(45deg);
+  border-radius:3px;
+}
+
+.heartSpark{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:4px;
+  height:4px;
+  border-radius:999px;
+  background:rgba(255,255,255,.95);
+  transform: translate(-50%,-50%);
+  opacity:.9;
+  animation: spark 900ms ease-out forwards;
+}
+
+@keyframes heartPop{
+  0%   {opacity:0; transform:translate(-50%,-50%) scale(.55) rotate(-6deg);}
+  12%  {opacity:1;}
+  40%  {opacity:1; transform:translate(-50%,-62%) scale(1.15) rotate(6deg);}
+  70%  {opacity:.95; transform:translate(-50%,-74%) scale(1.0) rotate(0deg);}
+  100% {opacity:0; transform:translate(-50%,-92%) scale(.9) rotate(0deg);}
+}
+@keyframes spark{
+  0%   {opacity:0; transform:translate(-50%,-50%) scale(.5);}
+  30%  {opacity:.9;}
+  100% {opacity:0; transform:translate(-50%,-85%) scale(1.6);}
+}
 </style>
 </head>
 
@@ -287,6 +414,10 @@ body{
 
 <section class="popup hidden" id="popup">
   <div class="popupHeader">
+    <div class="windowDots" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
+
     <div class="hdrLeft">
       <div>New Message</div>
       <div class="dayTracker" id="dayTracker" aria-label="Relationship counter"></div>
@@ -315,7 +446,7 @@ body{
 <script>
 const PASS = "07242024";
 
-/* ✅ together date (MM-DD-YY = Aug 11 2025) */
+/* ✅ together date (Aug 11, 2025) */
 const START_DATE = "2025-08-11";
 
 const sets = {
@@ -370,14 +501,39 @@ function updateDayTracker(){
   const now   = startOfDay(new Date());
 
   if(now < start){
-    el.textContent = `0y 0m 0d ♡ (0 days)`;
+    el.textContent = `♡ 0y 0m 0d • 0 days ♡`;
     return;
   }
 
   const {y,m,d} = diffYMD(start, now);
   const totalDays = Math.floor((now - start) / 86400000);
 
-  el.textContent = `${y}y ${m}m ${d}d ♡ (${totalDays} days)`;
+  el.textContent = `♡ ${y}y ${m}m ${d}d • ${totalDays} days ♡`;
+}
+
+/* ---- kawaii heart pop ---- */
+function popHeart(hostEl){
+  const host = hostEl || document.querySelector(".popupBody") || document.body;
+  const rect = host.getBoundingClientRect();
+
+  const x = rect.left + rect.width * (0.55 + (Math.random()*0.12 - 0.06));
+  const y = rect.top  + rect.height * (0.22 + (Math.random()*0.10));
+
+  const h = document.createElement("div");
+  h.className = "heartPop";
+  h.style.setProperty("--x", x + "px");
+  h.style.setProperty("--y", y + "px");
+
+  const tail = document.createElement("div");
+  tail.className = "tail";
+  h.appendChild(tail);
+
+  const s = document.createElement("div");
+  s.className = "heartSpark";
+  h.appendChild(s);
+
+  document.body.appendChild(h);
+  setTimeout(()=>h.remove(), 950);
 }
 
 /* ----- audio context ----- */
@@ -454,6 +610,7 @@ function typeText(text){
     if(i>=text.length){
       clearInterval(typingTimer);
       el.classList.remove("typing");
+      popHeart(document.querySelector(".popupBody")); /* ✅ pop after message finishes */
     }
   }, 40);
 }
@@ -542,7 +699,6 @@ document.addEventListener("click",e=>{
         typeText(sets.sweet[Math.floor(Math.random()*sets.sweet.length)]);
 
         tryAutoPlay();
-
       } else {
         entered=""; updateDots();
       }
@@ -552,13 +708,11 @@ document.addEventListener("click",e=>{
   if(b){
     clickSound();
     typeText(sets[b.dataset.set][Math.floor(Math.random()*sets[b.dataset.set].length)]);
+    popHeart(document.querySelector(".popupBody")); /* ✅ extra pop on button press */
   }
 });
 
-/*
-  iOS fallback: only start music once AFTER unlock,
-  and never restart it if user intentionally paused.
-*/
+/* iOS fallback: only start music once AFTER unlock, never restart if user paused */
 document.addEventListener("click", ()=>{
   const player = document.getElementById("autoPlayer");
   if(!player) return;

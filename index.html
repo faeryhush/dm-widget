@@ -15,7 +15,6 @@
   --line:rgba(0,0,0,.18);
   --shadow:rgba(0,0,0,.12);
 }
-
 *{box-sizing:border-box}
 
 body{
@@ -50,31 +49,26 @@ body{
   box-shadow:0 16px 36px var(--shadow);
   overflow:hidden;
 }
-
 .lockTop{
   padding:18px 16px 8px;
   text-align:center;
   font-family:'Press Start 2P', monospace;
 }
-
 .lockTop h1{
   font-size:14px;
   margin:6px 0 10px;
 }
-
 .lockTop p{
   font-size:10px;
   opacity:.7;
   margin-bottom:10px;
 }
-
 .dots{
   display:flex;
   justify-content:center;
   gap:6px;
   margin-bottom:8px;
 }
-
 .dot{
   width:12px;
   height:12px;
@@ -82,7 +76,6 @@ body{
   border:2px solid var(--line);
 }
 .dot.filled{background:var(--pink)}
-
 .err{
   height:16px;
   font-size:9px;
@@ -97,7 +90,6 @@ body{
   padding:14px;
   border-top:2px solid var(--line);
 }
-
 .key{
   padding:14px 0;
   font-family:'Press Start 2P', monospace;
@@ -124,13 +116,10 @@ body{
   width:360px;
   max-width:92vw;
   position:relative;
-
-  /* sticker-ish shadow + soft blush ring */
   box-shadow:
     14px 14px 0 rgba(242,169,199,.55),
     0 0 0 6px rgba(242,169,199,.10);
 }
-
 .popupHeader{
   background:var(--pink2);
   padding:14px;
@@ -140,7 +129,6 @@ body{
   position:relative;
   z-index:2;
 }
-
 /* cute window dots */
 .windowDots{
   position:absolute;
@@ -166,11 +154,10 @@ body{
   flex-direction:column;
   align-items:center;
   gap:6px;
-  padding-right:44px; /* leave room for music button */
+  padding-right:44px;
   position:relative;
   z-index:3;
 }
-
 .dayTracker{
   font-family:'Press Start 2P', monospace;
   font-size:8px;
@@ -220,8 +207,6 @@ body{
   line-height:2;
   position:relative;
   z-index:2;
-
-  /* note feel */
   background:
     repeating-linear-gradient(
       to bottom,
@@ -232,7 +217,6 @@ body{
     );
   box-shadow: inset 0 0 0 2px rgba(0,0,0,.06);
 }
-
 .typing::after{
   content:"";
   display:inline-block;
@@ -251,7 +235,6 @@ body{
   position:relative;
   z-index:2;
 }
-
 .popupFooter button{
   padding:14px 6px;
   background:none;
@@ -259,16 +242,13 @@ body{
   width:100%;
   -webkit-appearance:none;
   appearance:none;
-  color:#fff; /* prevents iOS blue */
+  color:#fff;
   text-align:center;
-
   display:flex;
   align-items:center;
   justify-content:center;
-
   -webkit-tap-highlight-color: transparent;
 }
-
 .popupFooter button+button{ border-left:2px solid var(--line); }
 
 .tag{
@@ -280,7 +260,6 @@ body{
   border:2px solid var(--line);
   background:rgba(242,169,199,.55);
   color:#fff;
-
   display:inline-flex;
   align-items:center;
   justify-content:center;
@@ -288,7 +267,6 @@ body{
   max-width:100%;
   white-space:normal;
   min-height:30px;
-
   box-shadow:0 3px 0 rgba(0,0,0,.12);
 }
 .popupFooter button:active .tag{
@@ -359,21 +337,16 @@ body{
 <script>
 /* ---------- CONFIG ---------- */
 const PASS = "07242024";
-
-/* together date */
 const START_DATE = "2025-08-11";
-
-/* his timezone */
 const TZ = "Europe/London"; // Walsall (DST-safe)
 
-/* pinned (exactly as requested) */
+/* pinned */
 const PINNED = `Hello, my sweet prince.
 My red string.
 I made this just for you.
 You can visit whenever you want.`;
 
 /* ---------- MESSAGE BANKS ---------- */
-/* Reassurance + What I Love are NOT time-based */
 const SETS = {
   reassurance: [
     "You’re safe here. Nothing is required of you.",
@@ -387,7 +360,6 @@ const SETS = {
     "You are not a burden. Not to me.",
     "You’re allowed to have hard days."
   ],
-
   what: [
     "I love how thoughtful you are.",
     "I love your mind. The way you notice things other people miss.",
@@ -402,7 +374,6 @@ const SETS = {
   ]
 };
 
-/* Something Sweet IS time-of-day based (UK/Walsall) */
 const SWEET_TOD = {
   morning: [
     "Good morning, my sweet prince.",
@@ -434,7 +405,6 @@ const SWEET_TOD = {
   ]
 };
 
-/* Return messages (when he comes back) */
 const RETURN = {
   soon: [
     "Back so soon?",
@@ -453,7 +423,7 @@ const RETURN = {
   ]
 };
 
-/* ---------- ANNIVERSARY COPY (month-by-month) ---------- */
+/* ---------- ANNIVERSARY COPY ---------- */
 const ANNIVERSARY_MONTHLY = {
   1:  "Happy 1 month anniversary, my love.",
   2:  "Happy 2 month anniversary. Still you.",
@@ -468,7 +438,6 @@ const ANNIVERSARY_MONTHLY = {
   11: "Eleven months with you. I’m proud of us.",
   12: "One year with you. I’d do it all again."
 };
-
 function yearlyAnniversaryText(years){
   if(years <= 1) return "One year with you. I’d do it all again.";
   return `Happy ${years} year anniversary, my love.`;
@@ -491,7 +460,6 @@ function timeBucketUK(){
   if(h >= 17 && h <= 21) return "evening";
   return "night";
 }
-
 function monthsSinceStartUK(){
   const s = new Date(new Date(START_DATE + "T00:00:00").toLocaleString("en-US",{timeZone:TZ}));
   const n = ukNow();
@@ -513,7 +481,7 @@ function isYearlyAnniversaryUK(){
 function isMonthlyAnniversaryUK(){
   const s = new Date(new Date(START_DATE + "T00:00:00").toLocaleString("en-US",{timeZone:TZ}));
   const n = ukNow();
-  return n.getDate() === s.getDate(); // the 11th
+  return n.getDate() === s.getDate();
 }
 function getAnniversaryMessage(){
   if(isYearlyAnniversaryUK()){
@@ -527,7 +495,7 @@ function getAnniversaryMessage(){
   return "";
 }
 
-/* ---------- TRACKER (combo: y/m/d + total days) ---------- */
+/* ---------- TRACKER ---------- */
 function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 function diffYMD(from, to){
   let y = to.getFullYear() - from.getFullYear();
@@ -544,10 +512,8 @@ function diffYMD(from, to){
 function updateDayTracker(){
   const el = document.getElementById("dayTracker");
   if(!el) return;
-
   const start = startOfDay(new Date(START_DATE + "T00:00:00"));
   const now   = startOfDay(new Date());
-
   if(now < start){
     el.textContent = `♡ 0y 0m 0d • 0 days ♡`;
     return;
@@ -557,14 +523,12 @@ function updateDayTracker(){
   el.textContent = `♡ ${y}y ${m}m ${d}d • ${totalDays} days ♡`;
 }
 
-/* ---------- AUDIO (click + typing + music) ---------- */
+/* ---------- AUDIO ---------- */
 let audioCtx=null;
 function ensureAudio(){
   if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
   if(audioCtx.state==="suspended") audioCtx.resume();
 }
-
-/* button click sounds */
 function clickSound(freq=620){
   if(!audioCtx) return;
   const o=audioCtx.createOscillator(), g=audioCtx.createGain();
@@ -575,22 +539,17 @@ function clickSound(freq=620){
   o.connect(g); g.connect(audioCtx.destination);
   o.start(); o.stop(audioCtx.currentTime+.07);
 }
-
 function unlockSound(){
   clickSound(520); setTimeout(()=>clickSound(780),90);
 }
-
-/* softer typing sound */
 function typeKeySound(){
   if(!audioCtx) return;
-
   const dur = 0.016;
   const buffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * dur), audioCtx.sampleRate);
   const data = buffer.getChannelData(0);
   for(let i=0;i<data.length;i++){
     data[i] = (Math.random()*2-1) * (0.7 - (i/data.length)*0.6);
   }
-
   const src = audioCtx.createBufferSource();
   src.buffer = buffer;
 
@@ -611,7 +570,7 @@ function typeKeySound(){
   src.stop(audioCtx.currentTime + dur);
 }
 
-/* ---- music control / autoplay logic ---- */
+/* ---------- MUSIC ---------- */
 let unlocked = false;
 let userPausedMusic = false;
 let musicEverStarted = false;
@@ -619,10 +578,9 @@ let musicEverStarted = false;
 function applyMusicDefaults(){
   const player = document.getElementById("autoPlayer");
   if(!player) return;
-  player.volume = 0.45;  // tweak 0.35–0.6
+  player.volume = 0.45;
   player.loop = true;
 }
-
 function tryAutoPlay(){
   const player = document.getElementById("autoPlayer");
   if(!player) return;
@@ -632,7 +590,6 @@ function tryAutoPlay(){
     updateMusicBtn();
   }).catch(()=>{});
 }
-
 const musicBtn = document.getElementById("musicBtn");
 function updateMusicBtn(){
   const player = document.getElementById("autoPlayer");
@@ -642,7 +599,6 @@ function updateMusicBtn(){
   musicBtn.classList.toggle("on", playing);
   musicBtn.setAttribute("aria-label", playing ? "Pause music" : "Play music");
 }
-
 musicBtn.addEventListener("click",(e)=>{
   e.stopPropagation();
   ensureAudio();
@@ -658,19 +614,12 @@ musicBtn.addEventListener("click",(e)=>{
   }
   updateMusicBtn();
 });
-
 document.getElementById("autoPlayer").addEventListener("play", updateMusicBtn);
 document.getElementById("autoPlayer").addEventListener("pause", updateMusicBtn);
 
-/*
-  iOS fallback:
-  Only helps iOS start music the first time AFTER unlock,
-  and never restarts it if you intentionally paused.
-*/
 document.addEventListener("click", ()=>{
   const player = document.getElementById("autoPlayer");
   if(!player) return;
-
   if(unlocked && !musicEverStarted && !userPausedMusic && player.paused){
     tryAutoPlay();
   }
@@ -679,9 +628,7 @@ document.addEventListener("click", ()=>{
 /* ---------- TYPING (hesitation every other message) ---------- */
 let typingTimer=null;
 let messageIndex=0;
-
 function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-
 function pickPauseIndex(text){
   const points=[];
   for(let i=10;i<text.length-10;i++){
@@ -691,14 +638,13 @@ function pickPauseIndex(text){
   if(points.length) return points[Math.floor(Math.random()*points.length)];
   return Math.floor(text.length*0.55);
 }
-
 function typeText(text, onDone){
   const el=document.getElementById("msg");
   el.textContent="";
   el.classList.add("typing");
 
   messageIndex += 1;
-  const doHesitate = (messageIndex % 2 === 0); // every other message
+  const doHesitate = (messageIndex % 2 === 0);
   const pauseAt = doHesitate ? pickPauseIndex(text) : -1;
   let paused=false;
   let i=0;
@@ -729,11 +675,11 @@ function typeText(text, onDone){
   }
 }
 
-/* ---------- RETURN LOGIC (with once-per-UK-day cap) ---------- */
+/* ---------- RETURN MESSAGE (replaces pinned when it triggers) ---------- */
 function getReturnMessage(){
   const now = Date.now();
-  const lastKey = "shyfaery_last_visit_ts_v3";
-  const shownKey = "shyfaery_return_shown_day_v3";
+  const lastKey = "shyfaery_last_visit_ts_v4";
+  const shownKey = "shyfaery_return_shown_day_v4";
 
   const last = Number(localStorage.getItem(lastKey) || 0);
   localStorage.setItem(lastKey, String(now));
@@ -776,17 +722,14 @@ function showAfterUnlock(){
   updateDayTracker();
   setInterval(updateDayTracker, 60*1000);
 
-  const ann = getAnniversaryMessage(); // replaces pinned that day
-  const first = ann || PINNED;
-  const ret = getReturnMessage();
-
   firstButtonAfterUnlock = true;
 
-  typeText(first, ()=>{
-    if(ret){
-      setTimeout(()=>typeText(ret), 420);
-    }
-  });
+  const ann = getAnniversaryMessage();   // priority 1
+  const ret = !ann ? getReturnMessage() : ""; // priority 2 (only if not anniversary)
+  const first = ann || ret || PINNED;    // priority 3
+
+  // just show the chosen "first" line (no extra chained messages)
+  typeText(first);
 
   tryAutoPlay();
 }
@@ -811,14 +754,20 @@ document.addEventListener("click",(e)=>{
     if(entered.length<PASS.length){
       entered+=val;
       updateDots();
+      return;
     }
+
+    // if somehow overflow, reset
+    entered=entered.slice(0, PASS.length);
+    updateDots();
 
     if(entered.length===PASS.length){
       if(entered===PASS){
         unlockSound();
         unlocked=true;
+        document.getElementById("err").textContent="";
         showAfterUnlock();
-      } else {
+      }else{
         document.getElementById("err").textContent="Wrong code.";
       }
       entered="";
@@ -844,7 +793,7 @@ document.addEventListener("click",(e)=>{
       const bucket = timeBucketUK();
       const pool = SWEET_TOD[bucket] || SWEET_TOD.evening;
       typeText(pick(pool));
-    } else {
+    }else{
       const pool = SETS[cat] || SETS.reassurance;
       typeText(pick(pool));
     }

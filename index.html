@@ -272,8 +272,9 @@ body{
   width:100%;
   -webkit-appearance:none;
   appearance:none;
-  color:#fff;
+  color:#fff; /* prevents iOS blue */
   text-align:center;
+
   display:flex;
   align-items:center;
   justify-content:center;
@@ -296,6 +297,8 @@ body{
   max-width:100%;
   white-space:normal;
   min-height:28px;
+
+  /* pressable */
   box-shadow:0 3px 0 rgba(0,0,0,.12);
 }
 .popupFooter button:active .tag{
@@ -304,76 +307,6 @@ body{
 }
 
 .hidden{display:none}
-
-/* --- kawaii heart pop (SVG, two hearts + sparkles) --- */
-.heartPop{
-  position:absolute;
-  left: var(--x, 50%);
-  top:  var(--y, 50%);
-  transform: translate(-50%,-50%) scale(.75);
-  width:44px;
-  height:34px;
-  pointer-events:none;
-  opacity:0;
-  z-index:10;
-  animation: heartPop 900ms cubic-bezier(.2,1.1,.25,1) forwards;
-}
-.heartPop .hwrap{
-  position:relative;
-  width:100%;
-  height:100%;
-}
-.heartPop svg{
-  position:absolute;
-  display:block;
-  filter: drop-shadow(0 2px 0 rgba(0,0,0,.12));
-}
-.heartPop .heart1{
-  width:24px; height:24px;
-  left:10px; top:6px;
-  transform: rotate(-6deg);
-}
-.heartPop .heart2{
-  width:16px; height:16px;
-  left:26px; top:2px;
-  opacity:.95;
-  transform: rotate(10deg);
-  animation: miniFloat 900ms ease-out forwards;
-}
-
-.heartSpark{
-  position:absolute;
-  width:5px; height:5px;
-  border-radius:999px;
-  background:rgba(255,255,255,.95);
-  opacity:.9;
-  transform: translate(-50%,-50%);
-  animation: spark 900ms ease-out forwards;
-}
-.heartSpark.s1{ left:14px; top:8px; }
-.heartSpark.s2{ left:32px; top:10px; }
-.heartSpark.s3{ left:22px; top:2px; }
-.heartSpark.s4{ left:30px; top:22px; opacity:.75; }
-
-@keyframes heartPop{
-  0%   {opacity:0; transform:translate(-50%,-50%) scale(.55) rotate(-8deg);}
-  12%  {opacity:1;}
-  40%  {opacity:1; transform:translate(-50%,-62%) scale(1.15) rotate(8deg);}
-  70%  {opacity:.95; transform:translate(-50%,-74%) scale(1.0) rotate(0deg);}
-  100% {opacity:0; transform:translate(-50%,-92%) scale(.9) rotate(0deg);}
-}
-
-@keyframes miniFloat{
-  0%   {transform: translate(0,0) rotate(10deg) scale(.9);}
-  40%  {transform: translate(-2px,-6px) rotate(2deg) scale(1.05);}
-  100% {transform: translate(-4px,-12px) rotate(0deg) scale(.95);}
-}
-
-@keyframes spark{
-  0%   {opacity:0; transform:translate(-50%,-50%) scale(.5);}
-  30%  {opacity:.95;}
-  100% {opacity:0; transform:translate(-50%,-95%) scale(1.8);}
-}
 </style>
 </head>
 
@@ -503,60 +436,6 @@ function updateDayTracker(){
   el.textContent = `♡ ${y}y ${m}m ${d}d • ${totalDays} days ♡`;
 }
 
-/* ---- kawaii heart pop (two SVG hearts + sparkles) ---- */
-function popHeart(hostEl){
-  const host = hostEl || document.querySelector(".popupBody") || document.body;
-  const rect = host.getBoundingClientRect();
-
-  const x = rect.left + rect.width * (0.52 + (Math.random()*0.14 - 0.07));
-  const y = rect.top  + rect.height * (0.26 + (Math.random()*0.10));
-
-  const h = document.createElement("div");
-  h.className = "heartPop";
-  h.style.setProperty("--x", x + "px");
-  h.style.setProperty("--y", y + "px");
-
-  const heartSVG = `
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 21s-7.2-4.6-9.6-8.6C.7 9.3 2.3 6 5.7 5.5c1.9-.3 3.6.6 4.6 2
-               1-1.4 2.7-2.3 4.6-2 3.4.5 5 3.8 3.3 6.9C19.2 16.4 12 21 12 21z"
-            fill="rgba(242,169,199,.98)"
-            stroke="rgba(0,0,0,.14)"
-            stroke-width="1.2"
-            stroke-linejoin="round"/>
-      <path d="M9.2 8.2c.7-.7 1.7-1.1 2.8-1"
-            fill="none"
-            stroke="rgba(255,255,255,.85)"
-            stroke-width="1.4"
-            stroke-linecap="round"
-            opacity=".7"/>
-    </svg>
-  `;
-
-  h.innerHTML = `
-    <div class="hwrap">
-      <div class="heartSpark s1"></div>
-      <div class="heartSpark s2"></div>
-      <div class="heartSpark s3"></div>
-      <div class="heartSpark s4"></div>
-
-      <div class="heart1">${heartSVG}</div>
-      <div class="heart2">${heartSVG}</div>
-    </div>
-  `;
-
-  // turn those wrappers into positioned SVGs
-  const h1 = h.querySelector(".heart1");
-  const h2 = h.querySelector(".heart2");
-  h1.className = "heart1";
-  h2.className = "heart2";
-  h1.querySelector("svg").classList.add("heart1");
-  h2.querySelector("svg").classList.add("heart2");
-
-  document.body.appendChild(h);
-  setTimeout(()=>h.remove(), 950);
-}
-
 /* ----- audio context ----- */
 let audioCtx=null;
 function ensureAudio(){
@@ -631,7 +510,6 @@ function typeText(text){
     if(i>=text.length){
       clearInterval(typingTimer);
       el.classList.remove("typing");
-      popHeart(document.querySelector(".popupBody"));
     }
   }, 40);
 }
@@ -652,7 +530,7 @@ let musicEverStarted = false;
 function applyMusicDefaults(){
   const player = document.getElementById("autoPlayer");
   if(!player) return;
-  player.volume = 0.45;
+  player.volume = 0.45; /* tweak 0.35–0.6 */
   player.loop = true;
 }
 
@@ -728,7 +606,6 @@ document.addEventListener("click",e=>{
   if(b){
     clickSound();
     typeText(sets[b.dataset.set][Math.floor(Math.random()*sets[b.dataset.set].length)]);
-    popHeart(document.querySelector(".popupBody"));
   }
 });
 

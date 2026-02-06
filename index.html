@@ -132,37 +132,39 @@ body{
   background:var(--pink2);
   padding:14px;
   text-align:center;
+  font-family:'Press Start 2P', monospace;
+  font-size:14px;
   position:relative;
 }
 
-/* header stack */
+/* header stack (title + tracker) */
+/* IMPORTANT: pad right so it never sits under the music button */
 .hdrLeft{
   display:flex;
   flex-direction:column;
   align-items:center;
   gap:6px;
-}
-
-.hdrTitle{
-  font-family:'Press Start 2P', monospace;
-  font-size:14px;
+  padding-right:44px; /* leaves room for music button */
+  position:relative;
+  z-index:1;
 }
 
 /* day tracker pill */
 .dayTracker{
   font-family:'Press Start 2P', monospace;
   font-size:8px;
+  line-height:1.35;
   padding:6px 8px;
   border-radius:999px;
   border:2px solid var(--line);
   background:rgba(255,255,255,.85);
   color:#222;
+  max-width:260px;
   text-align:center;
   white-space:normal;
-  line-height:1.35;
 }
 
-/* music button */
+/* small music control button */
 .musicBtn{
   position:absolute;
   right:10px;
@@ -172,12 +174,20 @@ body{
   border-radius:10px;
   border:2px solid var(--line);
   background:#fff;
+  color:#222 !important;          /* ✅ no iOS blue */
   font-family:'Press Start 2P', monospace;
   font-size:10px;
+  line-height:1;
   display:flex;
   align-items:center;
   justify-content:center;
+  -webkit-appearance:none;
+  appearance:none;
+  padding:0;
+  z-index:5;                      /* ✅ above header stack */
+  -webkit-tap-highlight-color: transparent;
 }
+.musicBtn:active{transform:translateY(1px)}
 .musicBtn.on{ background:rgba(242,169,199,.35); }
 
 .popupBody{
@@ -206,11 +216,20 @@ body{
   border-top:2px solid var(--line);
 }
 
+/* make footer buttons flex-center so tags never squish weird */
 .popupFooter button{
   padding:14px 6px;
   background:none;
   border:none;
   width:100%;
+  -webkit-appearance:none;
+  appearance:none;
+  color:#fff; /* prevents iOS blue */
+  text-align:center;
+
+  display:flex;               /* ✅ center the pill */
+  align-items:center;
+  justify-content:center;
 }
 
 .popupFooter button+button{
@@ -220,11 +239,19 @@ body{
 .tag{
   font-family:'Press Start 2P', monospace;
   font-size:7px;
-  padding:7px 8px;
+  line-height:1.55;           /* ✅ nicer 2-line spacing */
+  padding:8px 10px;           /* ✅ a bit more room */
   border-radius:999px;
   border:2px solid var(--line);
   background:rgba(242,169,199,.55);
   color:#fff;
+  display:inline-flex;        /* ✅ stable multi-line pill */
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  max-width:100%;
+  white-space:normal;
+  min-height:28px;            /* ✅ prevents “smoosh” */
 }
 
 .hidden{display:none}
@@ -239,6 +266,7 @@ body{
     <h1>Enter Passcode</h1>
     <p>the day we met</p>
     <div class="dots" id="dots"></div>
+    <div class="err" id="err"></div>
   </div>
 
   <div class="pad">
@@ -260,23 +288,25 @@ body{
 <section class="popup hidden" id="popup">
   <div class="popupHeader">
     <div class="hdrLeft">
-      <div class="hdrTitle">New Message</div>
-      <div class="dayTracker" id="dayTracker"></div>
+      <div>New Message</div>
+      <div class="dayTracker" id="dayTracker" aria-label="Relationship counter"></div>
     </div>
-    <button class="musicBtn" id="musicBtn">►</button>
+
+    <button class="musicBtn" id="musicBtn" type="button" aria-label="Toggle music">►</button>
   </div>
 
   <div class="popupBody">
     <div id="msg"></div>
-    <audio id="autoPlayer" preload="auto" loop>
+
+    <audio id="autoPlayer" preload="auto">
       <source src="audio/bg-music.mp3.mp3" type="audio/mpeg">
     </audio>
   </div>
 
   <div class="popupFooter">
-    <button data-set="reassurance"><span class="tag">Reassurance</span></button>
-    <button data-set="what"><span class="tag">What I Love</span></button>
-    <button data-set="sweet"><span class="tag">Something<br>Sweet</span></button>
+    <button type="button" data-set="reassurance"><span class="tag">Reassurance</span></button>
+    <button type="button" data-set="what"><span class="tag">What I Love</span></button>
+    <button type="button" data-set="sweet"><span class="tag">Something<br>Sweet</span></button>
   </div>
 </section>
 
@@ -284,65 +314,262 @@ body{
 
 <script>
 const PASS = "07242024";
+
+/* ✅ together date (MM-DD-YY = Aug 11 2025) */
 const START_DATE = "2025-08-11";
 
-/* messages omitted for brevity – keep yours exactly as-is */
+const sets = {
+  reassurance: [
+    "Sometimes I don’t think you realize the depth of what you've done to me. I am no longer able to look at another and feel any sort of wanting. It’s you, or it’s no one.",
+    "My heart belongs to you, and only you forever. If my future isn’t with you, I would rather be alone. There is no one else.",
+    "I am here. I will always be here.",
+    "You do not have to carry everything alone.",
+    "I believe you."
+  ],
+  what: [
+    "I love your eyes. They're such a pretty shade of green.",
+    "I love your hair, and the way your messy 'lil curls fall over your face. You always say that your hair is messy, but I love how it looks.",
+    "I love your patience.",
+    "I love how deeply you care.",
+    "I love how you keep trying."
+  ],
+  sweet: [
+    "I don’t remember what my thoughts sounded like before they learned your name. You are woven into who I am, and I cannot imagine a life without you now.",
+    "From the moment we met, I knew it was only a matter of time before you sunk deep beneath my bones and consumed me whole. I couldn't stop loving you even if I tried to.",
+    "I am really glad I get to love you.",
+    "Come here. I owe you a hug.",
+    "You make my days softer."
+  ]
+};
 
-/* ---- tracker logic ---- */
+/* ---- tracker (combo: y/m/d + total days) ---- */
 function startOfDay(d){
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
-
 function diffYMD(from, to){
   let y = to.getFullYear() - from.getFullYear();
   let m = to.getMonth() - from.getMonth();
   let d = to.getDate() - from.getDate();
 
   if(d < 0){
-    m--;
-    const prev = new Date(to.getFullYear(), to.getMonth(), 0);
-    d += prev.getDate();
+    m -= 1;
+    const prevMonth = new Date(to.getFullYear(), to.getMonth(), 0);
+    d += prevMonth.getDate();
   }
   if(m < 0){
-    y--;
+    y -= 1;
     m += 12;
   }
   return {y,m,d};
 }
-
 function updateDayTracker(){
   const el = document.getElementById("dayTracker");
-  const start = startOfDay(new Date(START_DATE+"T00:00:00"));
-  const now = startOfDay(new Date());
+  if(!el) return;
+
+  const start = startOfDay(new Date(START_DATE + "T00:00:00"));
+  const now   = startOfDay(new Date());
+
+  if(now < start){
+    el.textContent = `0y 0m 0d ♡ (0 days)`;
+    return;
+  }
 
   const {y,m,d} = diffYMD(start, now);
-  const daysTotal = Math.floor((now - start) / 86400000);
+  const totalDays = Math.floor((now - start) / 86400000);
 
-  el.textContent = `${y}y ${m}m ${d}d ♡ (${daysTotal} days)`;
+  el.textContent = `${y}y ${m}m ${d}d ♡ (${totalDays} days)`;
 }
 
-/* unlock logic */
+/* ----- audio context ----- */
+let audioCtx=null;
+function ensureAudio(){
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==="suspended") audioCtx.resume();
+}
+
+/* button click sounds */
+function clickSound(freq=620){
+  if(!audioCtx) return;
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type="triangle";
+  o.frequency.value=freq;
+  g.gain.setValueAtTime(.03,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.07);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime+.07);
+}
+
+function unlockSound(){
+  clickSound(520); setTimeout(()=>clickSound(780),90);
+}
+
+/* ---- softer, more "real typing" sound ---- */
+function typeKeySound(){
+  if(!audioCtx) return;
+
+  const dur = 0.016;
+  const buffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * dur), audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for(let i=0;i<data.length;i++){
+    data[i] = (Math.random()*2-1) * (0.7 - (i/data.length)*0.6);
+  }
+
+  const src = audioCtx.createBufferSource();
+  src.buffer = buffer;
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.frequency.value = 2200;
+  filter.Q.value = 1.1;
+
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.006, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0008, audioCtx.currentTime + dur);
+
+  src.connect(filter);
+  filter.connect(g);
+  g.connect(audioCtx.destination);
+
+  src.start();
+  src.stop(audioCtx.currentTime + dur);
+}
+
+/* typing */
+let typingTimer=null;
+function typeText(text){
+  const el=document.getElementById("msg");
+  el.textContent="";
+  el.classList.add("typing");
+  let i=0;
+  clearInterval(typingTimer);
+
+  typingTimer=setInterval(()=>{
+    const ch = text[i++] || "";
+    el.textContent += ch;
+
+    if(ch && ch !== " " && ch !== "\n"){
+      if(Math.random() < 0.85) typeKeySound();
+    }
+
+    if(i>=text.length){
+      clearInterval(typingTimer);
+      el.classList.remove("typing");
+    }
+  }, 40);
+}
+
+/* lock dots */
 const dots=document.getElementById("dots");
 for(let i=0;i<PASS.length;i++) dots.appendChild(document.createElement("div")).className="dot";
 let entered="";
-
-document.addEventListener("click",e=>{
-  const k=e.target.closest("[data-k]");
-  if(!k) return;
-
-  if(k.dataset.k==="del"){entered=entered.slice(0,-1);}
-  else if(entered.length<PASS.length){entered+=k.dataset.k;}
-
+function updateDots(){
   [...dots.children].forEach((d,i)=>d.classList.toggle("filled",i<entered.length));
+}
 
-  if(entered.length===PASS.length && entered===PASS){
-    document.getElementById("lock").classList.add("hidden");
-    document.getElementById("popup").classList.remove("hidden");
-    updateDayTracker();
-    setInterval(updateDayTracker,60000);
-    document.getElementById("autoPlayer").play().catch(()=>{});
+/* ---- music control / autoplay logic ---- */
+let unlocked = false;
+let userPausedMusic = false;
+let musicEverStarted = false;
+
+function applyMusicDefaults(){
+  const player = document.getElementById("autoPlayer");
+  if(!player) return;
+  player.volume = 0.45;
+  player.loop = true;
+}
+
+function tryAutoPlay(){
+  const player = document.getElementById("autoPlayer");
+  if(!player) return;
+  applyMusicDefaults();
+  player.play().then(()=>{
+    musicEverStarted = true;
+    updateMusicBtn();
+  }).catch(()=>{});
+}
+
+const musicBtn = document.getElementById("musicBtn");
+function updateMusicBtn(){
+  const player = document.getElementById("autoPlayer");
+  if(!player) return;
+  const playing = !player.paused;
+  musicBtn.textContent = playing ? "❚❚" : "►";
+  musicBtn.classList.toggle("on", playing);
+  musicBtn.setAttribute("aria-label", playing ? "Pause music" : "Play music");
+}
+
+musicBtn.addEventListener("click",(e)=>{
+  e.stopPropagation();
+  ensureAudio();
+  const player = document.getElementById("autoPlayer");
+  if(!player) return;
+
+  if(player.paused){
+    userPausedMusic = false;
+    tryAutoPlay();
+  }else{
+    userPausedMusic = true;
+    player.pause();
+  }
+  updateMusicBtn();
+});
+
+document.getElementById("autoPlayer").addEventListener("play", updateMusicBtn);
+document.getElementById("autoPlayer").addEventListener("pause", updateMusicBtn);
+
+/* main click handler */
+document.addEventListener("click",e=>{
+  ensureAudio();
+
+  const k=e.target.closest("[data-k]");
+  const b=e.target.closest("[data-set]");
+
+  if(k){
+    clickSound();
+    if(k.dataset.k==="del"){entered=entered.slice(0,-1);updateDots();return;}
+    if(entered.length<PASS.length){entered+=k.dataset.k;updateDots();}
+    if(entered.length===PASS.length){
+      if(entered===PASS){
+        unlockSound();
+        unlocked = true;
+
+        document.getElementById("lock").classList.add("hidden");
+        document.getElementById("popup").classList.remove("hidden");
+
+        updateDayTracker();
+        setInterval(updateDayTracker, 60 * 1000);
+
+        typeText(sets.sweet[Math.floor(Math.random()*sets.sweet.length)]);
+
+        tryAutoPlay();
+
+      } else {
+        entered=""; updateDots();
+      }
+    }
+  }
+
+  if(b){
+    clickSound();
+    typeText(sets[b.dataset.set][Math.floor(Math.random()*sets[b.dataset.set].length)]);
   }
 });
+
+/*
+  iOS fallback: only start music once AFTER unlock,
+  and never restart it if user intentionally paused.
+*/
+document.addEventListener("click", ()=>{
+  const player = document.getElementById("autoPlayer");
+  if(!player) return;
+
+  if(unlocked && !musicEverStarted && !userPausedMusic && player.paused){
+    tryAutoPlay();
+  }
+});
+
+applyMusicDefaults();
+updateMusicBtn();
 </script>
 </body>
 </html>

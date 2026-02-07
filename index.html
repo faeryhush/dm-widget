@@ -11,10 +11,11 @@
 :root{
   --pink:#f2a9c7;
   --pink2:rgba(242,169,199,.55);
-  --bgpink:rgba(242,169,199,.45);
   --line:rgba(0,0,0,.18);
   --shadow:rgba(0,0,0,.12);
 }
+
+/* ---------- BASE ---------- */
 *{box-sizing:border-box}
 
 body{
@@ -25,20 +26,30 @@ body{
   align-items:flex-start;
   padding:24px;
   overflow-y:auto;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      var(--bgpink) 0px,
-      var(--bgpink) 22px,
-      #fff 22px,
-      #fff 48px
-    );
+
+  /* ✅ Animated background setup (static image + canvas orbs) */
+  background: url("images/cloud-bg.jpg") center / cover no-repeat fixed;
 }
 
+/* full-screen orb layer behind the UI */
+#bgOrbs{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:0;
+  pointer-events:none;
+  opacity:.38;              /* subtle by default */
+  mix-blend-mode: screen;   /* makes glows feel like light */
+}
+
+/* keep your UI above it */
 .wrap{
   width:420px;
   max-width:95vw;
   margin:140px auto 40px;
+  position:relative;
+  z-index:1;
 }
 
 /* ---------- LOCK ---------- */
@@ -99,7 +110,6 @@ body{
   background:var(--pink);
   color:#fff;
   -webkit-tap-highlight-color: transparent;
-
   transition: transform 120ms steps(2,end), filter 120ms steps(2,end);
 }
 .key:hover{ filter: brightness(1.03); }
@@ -235,58 +245,60 @@ body{
 }
 @keyframes blink{50%{opacity:0}}
 
+/* ---------- FOOTER (no dividers) ---------- */
 .popupFooter{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
+  display:flex;
+  gap:10px;                 /* ✅ spacing instead of dividers */
+  padding:12px;
   border-top:2px solid var(--line);
   position:relative;
   z-index:2;
+  background:rgba(255,255,255,.75); /* helps stickers stand out */
+  backdrop-filter: blur(2px);
 }
 .popupFooter button{
-  padding:14px 6px;
+  flex:1;
+  padding:0;
   background:none;
   border:none;
-  width:100%;
   -webkit-appearance:none;
   appearance:none;
-  color:#fff; /* prevents iOS blue */
-  text-align:center;
+  -webkit-tap-highlight-color: transparent;
+  cursor:pointer;
   display:flex;
   align-items:center;
   justify-content:center;
-  -webkit-tap-highlight-color: transparent;
-  cursor:pointer;
 }
-.popupFooter button+button{ border-left:2px solid var(--line); }
 
-/* ---------- KAWAII STICKER TAGS ---------- */
+/* ---------- KAWAII STICKER TAGS (more readable text) ---------- */
 .tag{
   position:relative;
   font-family:'Press Start 2P', monospace;
   font-size:7px;
   line-height:1.55;
-  padding:9px 12px;
+  padding:10px 12px;        /* ✅ a bit puffier */
   border-radius:999px;
 
-  border:2px solid rgba(0,0,0,.22);
+  border:2px solid rgba(0,0,0,.16); /* ✅ softer outline */
   background: linear-gradient(to bottom,
-    rgba(255,255,255,.28),
-    rgba(242,169,199,.75)
+    rgba(255,255,255,.34),
+    rgba(242,169,199,.78)
   );
-  color:#fff;
 
-  display:inline-flex;
+  color: rgba(255,255,255,.98);
+  text-shadow:               /* ✅ makes text readable */
+    0 1px 0 rgba(0,0,0,.20),
+    0 2px 0 rgba(0,0,0,.08);
+
+  display:flex;
   align-items:center;
   justify-content:center;
   text-align:center;
-  max-width:100%;
-  white-space:normal;
-  min-height:32px;
-
-  /* sticker shadow: slightly stronger + cute */
+  width:100%;
+  min-height:38px;
   box-shadow:
-    0 4px 0 rgba(0,0,0,.14),
-    10px 10px 0 rgba(242,169,199,.22);
+    0 5px 0 rgba(0,0,0,.12),
+    10px 10px 0 rgba(242,169,199,.20);
 
   transition:
     transform 120ms steps(2,end),
@@ -294,30 +306,29 @@ body{
     box-shadow 120ms steps(2,end);
 }
 
-/* soft inner shine (sticker highlight) */
+/* soft inner shine */
 .tag::before{
   content:"";
   position:absolute;
-  inset:3px 6px auto 6px;
-  height:40%;
+  left:8px;
+  right:8px;
+  top:6px;
+  height:46%;
   border-radius:999px;
   background: linear-gradient(to bottom,
-    rgba(255,255,255,.55),
+    rgba(255,255,255,.62),
     rgba(255,255,255,0)
   );
   pointer-events:none;
-  opacity:.65;
+  opacity:.70;
 }
 
-/* hover: tiny brighten */
 .popupFooter button:hover .tag{ filter: brightness(1.06); }
-
-/* press: squish + shadow shortens */
 .popupFooter button:active .tag{
   transform: translateY(3px) scale(.985);
   box-shadow:
-    0 2px 0 rgba(0,0,0,.14),
-    8px 8px 0 rgba(242,169,199,.20);
+    0 2px 0 rgba(0,0,0,.12),
+    8px 8px 0 rgba(242,169,199,.18);
 }
 
 .hidden{display:none}
@@ -325,6 +336,9 @@ body{
 </head>
 
 <body>
+<!-- ✅ Animated background layer -->
+<canvas id="bgOrbs" aria-hidden="true"></canvas>
+
 <div class="wrap">
 
 <section class="lock" id="lock">
@@ -418,6 +432,7 @@ const SETS = {
     "I love the way you care so deeply.",
     "I love how you keep showing up."
   ],
+  /* ✅ Sweet is NOT time-of-day based */
   sweet: [
     "Come here. Just for a second.",
     "I want to be close to you. Even like this.",
@@ -432,7 +447,7 @@ const SETS = {
   ]
 };
 
-/* time-of-day greetings ONLY used on unlock, and ONLY morning/night */
+/* ✅ Time-of-day greetings ONLY used on unlock and ONLY morning/night */
 const SWEET_TOD = {
   morning: [
     "Good morning, my sweet prince.",
@@ -768,7 +783,7 @@ function showAfterUnlock(){
   // priority 2: return (only if not anniversary)
   const ret = !ann ? getReturnMessage() : "";
 
-  // priority 3: time-of-day greeting ONLY if morning/night, ONLY on unlock
+  // priority 3: time-of-day greeting ONLY morning/night, ONLY on unlock
   const bucket = timeBucketUK();
   const allowTOD = (bucket === "morning" || bucket === "night");
   const tod = (!ann && !ret && allowTOD) ? pick(SWEET_TOD[bucket]) : "";
@@ -829,6 +844,120 @@ document.addEventListener("click",(e)=>{
 
 applyMusicDefaults();
 updateMusicBtn();
+
+/* ---------- BACKGROUND ORBS (subtle) ---------- */
+(function(){
+  const c = document.getElementById("bgOrbs");
+  if(!c) return;
+  const ctx = c.getContext("2d", { alpha:true });
+
+  // Respect reduced motion
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let w=0,h=0,dpr=1;
+  function resize(){
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    w = Math.floor(window.innerWidth * dpr);
+    h = Math.floor(window.innerHeight * dpr);
+    c.width = w; c.height = h;
+    c.style.width = window.innerWidth + "px";
+    c.style.height = window.innerHeight + "px";
+  }
+
+  const colors = [
+    "rgba(255,255,255,0.60)",
+    "rgba(242,169,199,0.60)",
+    "rgba(255,210,235,0.60)"
+  ];
+
+  const ORB_COUNT = 7; // keep light for iOS
+  const orbs = [];
+  function rand(a,b){ return a + Math.random()*(b-a); }
+
+  function spawn(){
+    return {
+      x: rand(0,w),
+      y: rand(0,h),
+      r: rand(42*dpr, 110*dpr),
+      vx: rand(-0.10*dpr, 0.10*dpr),
+      vy: rand(-0.06*dpr, 0.06*dpr),
+      a: rand(0.07, 0.15),
+      pulse: rand(0.0008,0.0018),
+      phase: rand(0, Math.PI*2),
+      col: colors[Math.floor(Math.random()*colors.length)]
+    };
+  }
+
+  function drawStill(){
+    ctx.clearRect(0,0,w,h);
+    for(const o of orbs){
+      const g = ctx.createRadialGradient(o.x,o.y,0, o.x,o.y,o.r);
+      g.addColorStop(0, "rgba(242,169,199,0.10)");
+      g.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  function init(){
+    orbs.length = 0;
+    for(let i=0;i<ORB_COUNT;i++) orbs.push(spawn());
+  }
+
+  resize();
+  init();
+  window.addEventListener("resize", ()=>{ resize(); init(); if(reduce) drawStill(); }, { passive:true });
+
+  if(reduce){
+    drawStill();
+    return;
+  }
+
+  // ~40fps target (battery-friendly)
+  let last = 0;
+  const TARGET_DT = 1000/40;
+
+  function step(t){
+    if(t - last < TARGET_DT){
+      requestAnimationFrame(step);
+      return;
+    }
+    last = t;
+
+    ctx.clearRect(0,0,w,h);
+
+    for(const o of orbs){
+      o.x += o.vx;
+      o.y += o.vy;
+
+      if(o.x < -o.r) o.x = w + o.r;
+      if(o.x > w + o.r) o.x = -o.r;
+      if(o.y < -o.r) o.y = h + o.r;
+      if(o.y > h + o.r) o.y = -o.r;
+
+      o.phase += o.pulse * TARGET_DT;
+      const pulse = 0.55 + 0.45*Math.sin(o.phase);
+      const alpha = o.a * pulse;
+
+      const g = ctx.createRadialGradient(o.x,o.y,0, o.x,o.y,o.r);
+      // build center color at current alpha
+      const base = o.col.replace(/0\.60\)/, `${alpha})`);
+      g.addColorStop(0, base);
+      g.addColorStop(1, "rgba(255,255,255,0)");
+
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(step);
+  }
+
+  requestAnimationFrame(step);
+})();
 </script>
 </body>
 </html>

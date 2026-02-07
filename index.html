@@ -371,6 +371,19 @@ const SETS = {
     "I love you in the quiet. Especially in the quiet.",
     "I love the way you care so deeply.",
     "I love how you keep showing up."
+  ],
+  // Sweet is now NOT time-of-day based. It's a single pool.
+  sweet: [
+    "Come here. Just for a second.",
+    "I want to be close to you. Even like this.",
+    "I’m thinking about you again. Like I ever stop.",
+    "You feel like calm in my hands.",
+    "I’d steal you away for five quiet minutes.",
+    "I like the idea of your head on my shoulder.",
+    "If I could, I’d kiss your forehead and make the world softer.",
+    "You’re my favorite place to land.",
+    "I hope you know how loved you are.",
+    "I want you. Softly. Completely."
   ]
 };
 
@@ -662,7 +675,7 @@ function typeText(text){
   }
 }
 
-/* ---------- RETURN MESSAGE (replaces pinned when it triggers) ---------- */
+/* ---------- RETURN MESSAGE (once per UK day) ---------- */
 function getReturnMessage(){
   const now = Date.now();
   const lastKey = "shyfaery_last_visit_ts_v5";
@@ -688,9 +701,6 @@ function getReturnMessage(){
   localStorage.setItem(shownKey, todayUK);
   return msg;
 }
-
-/* ---------- FIRST BUTTON PRESS GREETING ---------- */
-let firstButtonAfterUnlock = true;
 
 /* ---------- LOCK DOTS ---------- */
 const dots=document.getElementById("dots");
@@ -720,11 +730,17 @@ function showAfterUnlock(){
   updateDayTracker();
   setInterval(updateDayTracker, 60*1000);
 
-  firstButtonAfterUnlock = true;
+  // priority 1: anniversary
+  const ann = getAnniversaryMessage();
 
-  const ann = getAnniversaryMessage();           // priority 1
-  const ret = !ann ? getReturnMessage() : "";    // priority 2 (only if not anniversary)
-  const first = ann || ret || PINNED;            // priority 3
+  // priority 2: return (only if not anniversary)
+  const ret = !ann ? getReturnMessage() : "";
+
+  // priority 3: time-of-day greeting (only at start; only if not anniversary and not return)
+  const tod = (!ann && !ret) ? pick(SWEET_TOD[timeBucketUK()] || SWEET_TOD.evening) : "";
+
+  // priority 4: pinned fallback
+  const first = ann || ret || tod || PINNED;
 
   typeText(first);
   tryAutoPlay();
@@ -749,14 +765,12 @@ document.addEventListener("click",(e)=>{
       return;
     }
 
-    // only accept digits up to PASS length
     if(entered.length < PASS.length){
       entered += val;
       updateDots();
       errEl.textContent = "";
     }
 
-    // when full length reached, validate immediately
     if(entered.length === PASS.length){
       if(entered === PASS){
         unlockSound();
@@ -770,27 +784,13 @@ document.addEventListener("click",(e)=>{
     return;
   }
 
+  // After unlock: ALWAYS cycle normal sets (no forced greeting).
   if(b && unlocked){
     clickSound();
 
-    // first button press after unlock ALWAYS gives a time-based Sweet greeting
-    if(firstButtonAfterUnlock){
-      firstButtonAfterUnlock = false;
-      const bucket = timeBucketUK();
-      const pool = SWEET_TOD[bucket] || SWEET_TOD.evening;
-      typeText(pick(pool));
-      return;
-    }
-
     const cat = b.dataset.set; // reassurance | what | sweet
-    if(cat === "sweet"){
-      const bucket = timeBucketUK();
-      const pool = SWEET_TOD[bucket] || SWEET_TOD.evening;
-      typeText(pick(pool));
-    }else{
-      const pool = SETS[cat] || SETS.reassurance;
-      typeText(pick(pool));
-    }
+    const pool = SETS[cat] || SETS.reassurance;
+    typeText(pick(pool));
   }
 });
 

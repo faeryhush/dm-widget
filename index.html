@@ -643,7 +643,7 @@ function updateMusicBtn(){
   const player = document.getElementById("autoPlayer");
   if(!player) return;
   const playing = !player.paused;
-  musicBtn.textContent = playing ? "❚❚" : "►";
+  musicBtn.textContent = playing ? "❚❚" : "▶︎";
   musicBtn.classList.toggle("on", playing);
   musicBtn.setAttribute("aria-label", playing ? "Pause music" : "Play music");
 }

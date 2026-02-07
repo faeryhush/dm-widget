@@ -15,9 +15,9 @@
   --shadow:rgba(0,0,0,.12);
 }
 
-/* ---------- BASE ---------- */
 *{box-sizing:border-box}
 
+/* ---------- BACKGROUND ---------- */
 body{
   margin:0;
   min-height:100vh;
@@ -27,7 +27,7 @@ body{
   padding:24px;
   overflow-y:auto;
 
-  /* ✅ Animated background setup (static image + canvas orbs) */
+  /* ✅ Use your repo-root image (you have IMG_0606.jpeg in root) */
   background: url("IMG_0606.jpeg") center / cover no-repeat fixed;
 }
 
@@ -39,11 +39,11 @@ body{
   height:100%;
   z-index:0;
   pointer-events:none;
-  opacity:.38;              /* subtle by default */
-  mix-blend-mode: screen;   /* makes glows feel like light */
+  opacity:.55;              /* ✅ more visible */
+  mix-blend-mode: screen;   /* light/glow effect */
 }
 
-/* keep your UI above it */
+/* keep UI above */
 .wrap{
   width:420px;
   max-width:95vw;
@@ -65,15 +65,9 @@ body{
   text-align:center;
   font-family:'Press Start 2P', monospace;
 }
-.lockTop h1{
-  font-size:14px;
-  margin:6px 0 10px;
-}
-.lockTop p{
-  font-size:10px;
-  opacity:.7;
-  margin-bottom:10px;
-}
+.lockTop h1{ font-size:14px; margin:6px 0 10px; }
+.lockTop p{ font-size:10px; opacity:.7; margin-bottom:10px; }
+
 .dots{
   display:flex;
   justify-content:center;
@@ -87,11 +81,7 @@ body{
   border:2px solid var(--line);
 }
 .dot.filled{background:var(--pink)}
-.err{
-  height:16px;
-  font-size:9px;
-  color:#a33;
-}
+.err{ height:16px; font-size:9px; color:#a33; }
 
 /* keypad */
 .pad{
@@ -113,15 +103,8 @@ body{
   transition: transform 120ms steps(2,end), filter 120ms steps(2,end);
 }
 .key:hover{ filter: brightness(1.03); }
-.key:active{
-  transform: translateY(2px) scale(.985);
-  filter: brightness(.98);
-}
-.key.alt{
-  background:#f7f7f7;
-  color:#222;
-  font-size:9px;
-}
+.key:active{ transform: translateY(2px) scale(.985); filter: brightness(.98); }
+.key.alt{ background:#f7f7f7; color:#222; font-size:9px; }
 .spacer{visibility:hidden}
 
 /* ---------- POPUP ---------- */
@@ -147,7 +130,7 @@ body{
   z-index:2;
 }
 
-/* cute window dots */
+/* window dots */
 .windowDots{
   position:absolute;
   left:12px;
@@ -190,7 +173,7 @@ body{
   letter-spacing:.2px;
 }
 
-/* music control button */
+/* music button */
 .musicBtn{
   position:absolute;
   right:10px;
@@ -245,15 +228,16 @@ body{
 }
 @keyframes blink{50%{opacity:0}}
 
-/* ---------- FOOTER (no dividers) ---------- */
+/* ---------- FOOTER (no dividers + not clipped) ---------- */
 .popupFooter{
   display:flex;
-  gap:10px;                 /* ✅ spacing instead of dividers */
-  padding:12px;
+  gap:10px;
+  padding:12px 12px 20px; /* ✅ extra bottom padding so shadows fit */
   border-top:2px solid var(--line);
   position:relative;
   z-index:2;
-  background:rgba(255,255,255,.75); /* helps stickers stand out */
+
+  background:rgba(255,255,255,.75);
   backdrop-filter: blur(2px);
 }
 .popupFooter button{
@@ -270,43 +254,43 @@ body{
   justify-content:center;
 }
 
-/* ---------- KAWAII STICKER TAGS (more readable text) ---------- */
+/* kawaii sticker tag: readable + less clipping */
 .tag{
   position:relative;
   font-family:'Press Start 2P', monospace;
   font-size:7px;
   line-height:1.55;
-  padding:10px 12px;        /* ✅ a bit puffier */
+  padding:10px 12px;
   border-radius:999px;
 
-  border:2px solid rgba(0,0,0,.16); /* ✅ softer outline */
+  border:2px solid rgba(0,0,0,.16);
   background: linear-gradient(to bottom,
     rgba(255,255,255,.34),
     rgba(242,169,199,.78)
   );
 
   color: rgba(255,255,255,.98);
-  text-shadow:               /* ✅ makes text readable */
+  text-shadow:
     0 1px 0 rgba(0,0,0,.20),
     0 2px 0 rgba(0,0,0,.08);
 
+  width:100%;
+  min-height:38px;
   display:flex;
   align-items:center;
   justify-content:center;
   text-align:center;
-  width:100%;
-  min-height:38px;
+  white-space:normal;
+
   box-shadow:
-    0 5px 0 rgba(0,0,0,.12),
-    10px 10px 0 rgba(242,169,199,.20);
+    0 4px 0 rgba(0,0,0,.12),
+    8px 8px 0 rgba(242,169,199,.18);
 
   transition:
     transform 120ms steps(2,end),
     filter 120ms steps(2,end),
     box-shadow 120ms steps(2,end);
 }
-
-/* soft inner shine */
 .tag::before{
   content:"";
   position:absolute;
@@ -322,13 +306,12 @@ body{
   pointer-events:none;
   opacity:.70;
 }
-
 .popupFooter button:hover .tag{ filter: brightness(1.06); }
 .popupFooter button:active .tag{
   transform: translateY(3px) scale(.985);
   box-shadow:
     0 2px 0 rgba(0,0,0,.12),
-    8px 8px 0 rgba(242,169,199,.18);
+    6px 6px 0 rgba(242,169,199,.16);
 }
 
 .hidden{display:none}
@@ -336,7 +319,6 @@ body{
 </head>
 
 <body>
-<!-- ✅ Animated background layer -->
 <canvas id="bgOrbs" aria-hidden="true"></canvas>
 
 <div class="wrap">
@@ -432,7 +414,6 @@ const SETS = {
     "I love the way you care so deeply.",
     "I love how you keep showing up."
   ],
-  /* ✅ Sweet is NOT time-of-day based */
   sweet: [
     "Come here. Just for a second.",
     "I want to be close to you. Even like this.",
@@ -447,7 +428,7 @@ const SETS = {
   ]
 };
 
-/* ✅ Time-of-day greetings ONLY used on unlock and ONLY morning/night */
+/* time-of-day greetings ONLY on unlock, ONLY morning/night */
 const SWEET_TOD = {
   morning: [
     "Good morning, my sweet prince.",
@@ -643,7 +624,7 @@ function updateMusicBtn(){
   const player = document.getElementById("autoPlayer");
   if(!player) return;
   const playing = !player.paused;
-  musicBtn.textContent = playing ? "❚❚" : "▶︎";
+  musicBtn.textContent = playing ? "❚❚" : "►";
   musicBtn.classList.toggle("on", playing);
   musicBtn.setAttribute("aria-label", playing ? "Pause music" : "Play music");
 }
@@ -777,18 +758,13 @@ function showAfterUnlock(){
   updateDayTracker();
   setInterval(updateDayTracker, 60*1000);
 
-  // priority 1: anniversary
   const ann = getAnniversaryMessage();
-
-  // priority 2: return (only if not anniversary)
   const ret = !ann ? getReturnMessage() : "";
 
-  // priority 3: time-of-day greeting ONLY morning/night, ONLY on unlock
   const bucket = timeBucketUK();
   const allowTOD = (bucket === "morning" || bucket === "night");
   const tod = (!ann && !ret && allowTOD) ? pick(SWEET_TOD[bucket]) : "";
 
-  // priority 4: pinned fallback
   const first = ann || ret || tod || PINNED;
 
   typeText(first);
@@ -804,7 +780,6 @@ document.addEventListener("click",(e)=>{
 
   if(k){
     clickSound();
-
     const val = k.dataset.k;
 
     if(val === "del"){
@@ -833,10 +808,9 @@ document.addEventListener("click",(e)=>{
     return;
   }
 
-  // After unlock: ALWAYS cycle normal sets (no forced greeting).
   if(b && unlocked){
     clickSound();
-    const cat = b.dataset.set; // reassurance | what | sweet
+    const cat = b.dataset.set;
     const pool = SETS[cat] || SETS.reassurance;
     typeText(pick(pool));
   }
@@ -845,13 +819,14 @@ document.addEventListener("click",(e)=>{
 applyMusicDefaults();
 updateMusicBtn();
 
-/* ---------- BACKGROUND ORBS (subtle) ---------- */
+/* ---------- BACKGROUND ORBS (subtle, iOS-safe) ---------- */
 (function(){
   const c = document.getElementById("bgOrbs");
   if(!c) return;
-  const ctx = c.getContext("2d", { alpha:true });
 
-  // Respect reduced motion
+  const ctx = c.getContext("2d");   // ✅ iOS-safe
+  if(!ctx) return;
+
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   let w=0,h=0,dpr=1;
@@ -864,41 +839,29 @@ updateMusicBtn();
     c.style.height = window.innerHeight + "px";
   }
 
-  const colors = [
-    "rgba(255,255,255,0.60)",
-    "rgba(242,169,199,0.60)",
-    "rgba(255,210,235,0.60)"
-  ];
-
-  const ORB_COUNT = 7; // keep light for iOS
-  const orbs = [];
   function rand(a,b){ return a + Math.random()*(b-a); }
 
+  const ORB_COUNT = 7;
+  const palette = [
+    {r:255,g:255,b:255},
+    {r:242,g:169,b:199},
+    {r:255,g:210,b:235}
+  ];
+
+  const orbs = [];
   function spawn(){
+    const col = palette[Math.floor(Math.random()*palette.length)];
     return {
       x: rand(0,w),
       y: rand(0,h),
-      r: rand(42*dpr, 110*dpr),
+      r: rand(46*dpr, 115*dpr),
       vx: rand(-0.10*dpr, 0.10*dpr),
       vy: rand(-0.06*dpr, 0.06*dpr),
-      a: rand(0.07, 0.15),
+      a: rand(0.07, 0.16),
       pulse: rand(0.0008,0.0018),
       phase: rand(0, Math.PI*2),
-      col: colors[Math.floor(Math.random()*colors.length)]
+      col
     };
-  }
-
-  function drawStill(){
-    ctx.clearRect(0,0,w,h);
-    for(const o of orbs){
-      const g = ctx.createRadialGradient(o.x,o.y,0, o.x,o.y,o.r);
-      g.addColorStop(0, "rgba(242,169,199,0.10)");
-      g.addColorStop(1, "rgba(255,255,255,0)");
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
-      ctx.fill();
-    }
   }
 
   function init(){
@@ -906,45 +869,23 @@ updateMusicBtn();
     for(let i=0;i<ORB_COUNT;i++) orbs.push(spawn());
   }
 
-  resize();
-  init();
-  window.addEventListener("resize", ()=>{ resize(); init(); if(reduce) drawStill(); }, { passive:true });
-
-  if(reduce){
-    drawStill();
-    return;
-  }
-
-  // ~40fps target (battery-friendly)
-  let last = 0;
-  const TARGET_DT = 1000/40;
-
-  function step(t){
-    if(t - last < TARGET_DT){
-      requestAnimationFrame(step);
-      return;
-    }
-    last = t;
-
+  function drawFrame(){
     ctx.clearRect(0,0,w,h);
 
     for(const o of orbs){
-      o.x += o.vx;
-      o.y += o.vy;
+      o.x += o.vx; o.y += o.vy;
 
       if(o.x < -o.r) o.x = w + o.r;
       if(o.x > w + o.r) o.x = -o.r;
       if(o.y < -o.r) o.y = h + o.r;
       if(o.y > h + o.r) o.y = -o.r;
 
-      o.phase += o.pulse * TARGET_DT;
+      o.phase += o.pulse * (1000/40);
       const pulse = 0.55 + 0.45*Math.sin(o.phase);
       const alpha = o.a * pulse;
 
       const g = ctx.createRadialGradient(o.x,o.y,0, o.x,o.y,o.r);
-      // build center color at current alpha
-      const base = o.col.replace(/0\.60\)/, `${alpha})`);
-      g.addColorStop(0, base);
+      g.addColorStop(0, `rgba(${o.col.r},${o.col.g},${o.col.b},${alpha})`);
       g.addColorStop(1, "rgba(255,255,255,0)");
 
       ctx.fillStyle = g;
@@ -952,10 +893,29 @@ updateMusicBtn();
       ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
       ctx.fill();
     }
-
-    requestAnimationFrame(step);
   }
 
+  resize();
+  init();
+
+  window.addEventListener("resize", ()=>{
+    resize(); init();
+    if(reduce) drawFrame();
+  }, { passive:true });
+
+  if(reduce){
+    drawFrame();
+    return;
+  }
+
+  // ~40fps battery-friendly
+  let last=0, TARGET_DT=1000/40;
+  function step(t){
+    if(t-last < TARGET_DT){ requestAnimationFrame(step); return; }
+    last = t;
+    drawFrame();
+    requestAnimationFrame(step);
+  }
   requestAnimationFrame(step);
 })();
 </script>

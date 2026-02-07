@@ -129,6 +129,7 @@ body{
   position:relative;
   z-index:2;
 }
+
 /* cute window dots */
 .windowDots{
   position:absolute;
@@ -148,7 +149,6 @@ body{
 .windowDots span:nth-child(2){ background:rgba(255,255,255,.78); }
 .windowDots span:nth-child(3){ background:rgba(242,169,199,.35); }
 
-/* title + tracker stack */
 .hdrLeft{
   display:flex;
   flex-direction:column;
@@ -242,7 +242,7 @@ body{
   width:100%;
   -webkit-appearance:none;
   appearance:none;
-  color:#fff;
+  color:#fff; /* prevents iOS blue */
   text-align:center;
   display:flex;
   align-items:center;
@@ -338,7 +338,7 @@ body{
 /* ---------- CONFIG ---------- */
 const PASS = "07242024";
 const START_DATE = "2025-08-11";
-const TZ = "Europe/London"; // Walsall (DST-safe)
+const TZ = "Europe/London";
 
 /* pinned */
 const PINNED = `Hello, my sweet prince.
@@ -406,21 +406,9 @@ const SWEET_TOD = {
 };
 
 const RETURN = {
-  soon: [
-    "Back so soon?",
-    "There you are.",
-    "Couldn’t stay away, hm?"
-  ],
-  sameDay: [
-    "I missed you.",
-    "I’m glad you came back.",
-    "Come here."
-  ],
-  long: [
-    "I missed you. I really did.",
-    "It’s nice to see you again, my love.",
-    "I was hoping you’d come back."
-  ]
+  soon: ["Back so soon?","There you are.","Couldn’t stay away, hm?"],
+  sameDay: ["I missed you.","I’m glad you came back.","Come here."],
+  long: ["I missed you. I really did.","It’s nice to see you again, my love.","I was hoping you’d come back."]
 };
 
 /* ---------- ANNIVERSARY COPY ---------- */
@@ -638,7 +626,7 @@ function pickPauseIndex(text){
   if(points.length) return points[Math.floor(Math.random()*points.length)];
   return Math.floor(text.length*0.55);
 }
-function typeText(text, onDone){
+function typeText(text){
   const el=document.getElementById("msg");
   el.textContent="";
   el.classList.add("typing");
@@ -670,7 +658,6 @@ function typeText(text, onDone){
     if(i>=text.length){
       clearInterval(typingTimer);
       el.classList.remove("typing");
-      if(typeof onDone === "function") onDone();
     }
   }
 }
@@ -678,8 +665,8 @@ function typeText(text, onDone){
 /* ---------- RETURN MESSAGE (replaces pinned when it triggers) ---------- */
 function getReturnMessage(){
   const now = Date.now();
-  const lastKey = "shyfaery_last_visit_ts_v4";
-  const shownKey = "shyfaery_return_shown_day_v4";
+  const lastKey = "shyfaery_last_visit_ts_v5";
+  const shownKey = "shyfaery_return_shown_day_v5";
 
   const last = Number(localStorage.getItem(lastKey) || 0);
   localStorage.setItem(lastKey, String(now));
@@ -689,7 +676,6 @@ function getReturnMessage(){
   const todayUK = ukDateKey(ukNow());
   const shownDay = localStorage.getItem(shownKey) || "";
 
-  // cap: show at most once per UK day
   if(shownDay === todayUK) return "";
 
   const mins = (now - last) / 60000;
@@ -710,8 +696,20 @@ let firstButtonAfterUnlock = true;
 const dots=document.getElementById("dots");
 for(let i=0;i<PASS.length;i++) dots.appendChild(document.createElement("div")).className="dot";
 let entered="";
+const errEl = document.getElementById("err");
+
 function updateDots(){
-  [...dots.children].forEach((d,i)=>d.classList.toggle("filled",i<entered.length));
+  [...dots.children].forEach((d,i)=>d.classList.toggle("filled", i < entered.length));
+}
+function resetEntry(showError=false){
+  entered="";
+  updateDots();
+  if(showError){
+    errEl.textContent = "Wrong code.";
+    setTimeout(()=>{ errEl.textContent=""; }, 900);
+  }else{
+    errEl.textContent = "";
+  }
 }
 
 /* ---------- UNLOCK FLOW ---------- */
@@ -724,13 +722,11 @@ function showAfterUnlock(){
 
   firstButtonAfterUnlock = true;
 
-  const ann = getAnniversaryMessage();   // priority 1
-  const ret = !ann ? getReturnMessage() : ""; // priority 2 (only if not anniversary)
-  const first = ann || ret || PINNED;    // priority 3
+  const ann = getAnniversaryMessage();           // priority 1
+  const ret = !ann ? getReturnMessage() : "";    // priority 2 (only if not anniversary)
+  const first = ann || ret || PINNED;            // priority 3
 
-  // just show the chosen "first" line (no extra chained messages)
   typeText(first);
-
   tryAutoPlay();
 }
 
@@ -738,41 +734,40 @@ function showAfterUnlock(){
 document.addEventListener("click",(e)=>{
   ensureAudio();
 
-  const k=e.target.closest("[data-k]");
-  const b=e.target.closest("[data-set]");
+  const k = e.target.closest("[data-k]");
+  const b = e.target.closest("[data-set]");
 
   if(k){
     clickSound();
 
-    const val=k.dataset.k;
-    if(val==="del"){
-      entered=entered.slice(0,-1);
+    const val = k.dataset.k;
+
+    if(val === "del"){
+      entered = entered.slice(0,-1);
       updateDots();
+      errEl.textContent = "";
       return;
     }
 
-    if(entered.length<PASS.length){
-      entered+=val;
+    // only accept digits up to PASS length
+    if(entered.length < PASS.length){
+      entered += val;
       updateDots();
-      return;
+      errEl.textContent = "";
     }
 
-    // if somehow overflow, reset
-    entered=entered.slice(0, PASS.length);
-    updateDots();
-
-    if(entered.length===PASS.length){
-      if(entered===PASS){
+    // when full length reached, validate immediately
+    if(entered.length === PASS.length){
+      if(entered === PASS){
         unlockSound();
-        unlocked=true;
-        document.getElementById("err").textContent="";
+        unlocked = true;
+        resetEntry(false);
         showAfterUnlock();
       }else{
-        document.getElementById("err").textContent="Wrong code.";
+        resetEntry(true);
       }
-      entered="";
-      updateDots();
     }
+    return;
   }
 
   if(b && unlocked){
@@ -788,7 +783,6 @@ document.addEventListener("click",(e)=>{
     }
 
     const cat = b.dataset.set; // reassurance | what | sweet
-
     if(cat === "sweet"){
       const bucket = timeBucketUK();
       const pool = SWEET_TOD[bucket] || SWEET_TOD.evening;

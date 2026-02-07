@@ -99,6 +99,13 @@ body{
   background:var(--pink);
   color:#fff;
   -webkit-tap-highlight-color: transparent;
+
+  transition: transform 120ms steps(2,end), filter 120ms steps(2,end);
+}
+.key:hover{ filter: brightness(1.03); }
+.key:active{
+  transform: translateY(2px) scale(.985);
+  filter: brightness(.98);
 }
 .key.alt{
   background:#f7f7f7;
@@ -248,30 +255,69 @@ body{
   align-items:center;
   justify-content:center;
   -webkit-tap-highlight-color: transparent;
+  cursor:pointer;
 }
 .popupFooter button+button{ border-left:2px solid var(--line); }
 
+/* ---------- KAWAII STICKER TAGS ---------- */
 .tag{
+  position:relative;
   font-family:'Press Start 2P', monospace;
   font-size:7px;
   line-height:1.55;
-  padding:8px 10px;
+  padding:9px 12px;
   border-radius:999px;
-  border:2px solid var(--line);
-  background:rgba(242,169,199,.55);
+
+  border:2px solid rgba(0,0,0,.22);
+  background: linear-gradient(to bottom,
+    rgba(255,255,255,.28),
+    rgba(242,169,199,.75)
+  );
   color:#fff;
+
   display:inline-flex;
   align-items:center;
   justify-content:center;
   text-align:center;
   max-width:100%;
   white-space:normal;
-  min-height:30px;
-  box-shadow:0 3px 0 rgba(0,0,0,.12);
+  min-height:32px;
+
+  /* sticker shadow: slightly stronger + cute */
+  box-shadow:
+    0 4px 0 rgba(0,0,0,.14),
+    10px 10px 0 rgba(242,169,199,.22);
+
+  transition:
+    transform 120ms steps(2,end),
+    filter 120ms steps(2,end),
+    box-shadow 120ms steps(2,end);
 }
+
+/* soft inner shine (sticker highlight) */
+.tag::before{
+  content:"";
+  position:absolute;
+  inset:3px 6px auto 6px;
+  height:40%;
+  border-radius:999px;
+  background: linear-gradient(to bottom,
+    rgba(255,255,255,.55),
+    rgba(255,255,255,0)
+  );
+  pointer-events:none;
+  opacity:.65;
+}
+
+/* hover: tiny brighten */
+.popupFooter button:hover .tag{ filter: brightness(1.06); }
+
+/* press: squish + shadow shortens */
 .popupFooter button:active .tag{
-  transform:translateY(2px);
-  box-shadow:0 1px 0 rgba(0,0,0,.12);
+  transform: translateY(3px) scale(.985);
+  box-shadow:
+    0 2px 0 rgba(0,0,0,.14),
+    8px 8px 0 rgba(242,169,199,.20);
 }
 
 .hidden{display:none}
@@ -372,7 +418,6 @@ const SETS = {
     "I love the way you care so deeply.",
     "I love how you keep showing up."
   ],
-  // Sweet is now NOT time-of-day based. It's a single pool.
   sweet: [
     "Come here. Just for a second.",
     "I want to be close to you. Even like this.",
@@ -387,6 +432,7 @@ const SETS = {
   ]
 };
 
+/* time-of-day greetings ONLY used on unlock, and ONLY morning/night */
 const SWEET_TOD = {
   morning: [
     "Good morning, my sweet prince.",
@@ -394,20 +440,6 @@ const SWEET_TOD = {
     "Wake up, my red string. I’m here.",
     "I wish I could pull you close before your day starts.",
     "Morning. Be good today… or don’t."
-  ],
-  afternoon: [
-    "You crossed my mind. You never really leave it.",
-    "I hope you’ve eaten something today, my love.",
-    "I miss you. Quietly. Constantly.",
-    "Just a little reminder: you’re mine to adore.",
-    "I wish I could steal five minutes of your time and keep it."
-  ],
-  evening: [
-    "I missed you today.",
-    "Come sit with me, my sweet prince.",
-    "I wish I was there—just to be near you.",
-    "Let the day end in my arms, even if it’s only words.",
-    "If I could, I’d pull you in and keep you there."
   ],
   night: [
     "Trouble sleeping, my love?",
@@ -736,8 +768,10 @@ function showAfterUnlock(){
   // priority 2: return (only if not anniversary)
   const ret = !ann ? getReturnMessage() : "";
 
-  // priority 3: time-of-day greeting (only at start; only if not anniversary and not return)
-  const tod = (!ann && !ret) ? pick(SWEET_TOD[timeBucketUK()] || SWEET_TOD.evening) : "";
+  // priority 3: time-of-day greeting ONLY if morning/night, ONLY on unlock
+  const bucket = timeBucketUK();
+  const allowTOD = (bucket === "morning" || bucket === "night");
+  const tod = (!ann && !ret && allowTOD) ? pick(SWEET_TOD[bucket]) : "";
 
   // priority 4: pinned fallback
   const first = ann || ret || tod || PINNED;
@@ -787,7 +821,6 @@ document.addEventListener("click",(e)=>{
   // After unlock: ALWAYS cycle normal sets (no forced greeting).
   if(b && unlocked){
     clickSound();
-
     const cat = b.dataset.set; // reassurance | what | sweet
     const pool = SETS[cat] || SETS.reassurance;
     typeText(pick(pool));

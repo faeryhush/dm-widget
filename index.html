@@ -1,6 +1,949 @@
 <!doctype html>
 <html lang="en">
+<head><!doctype html>
+<html lang="en">
 <head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New Message</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --pink:#f2a9c7;
+  --pink2:rgba(242,169,199,.55);
+  --line: #d88ab1;
+  --shadow:rgba(0,0,0,.12);
+}
+
+*{box-sizing:border-box}
+
+/* ---------- BACKGROUND ---------- */
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:24px;
+  overflow-y:auto;
+
+  background: url("IMG_0606.jpeg") center / cover no-repeat fixed;
+}
+
+/* full-screen orb layer behind the UI */
+#bgOrbs{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:0;
+  pointer-events:none;
+  opacity:.55;
+  mix-blend-mode: screen;
+}
+
+/* keep UI above */
+.wrap{
+  width:420px;
+  max-width:95vw;
+  margin:220px auto 40px;
+  position:relative;
+  z-index:1;
+}
+
+/* ---------- LOCK ---------- */
+.lock{
+  background:#fff;
+  border:2px solid var(--line);
+  border-radius:20px;
+  box-shadow:0 16px 36px var(--shadow);
+  overflow:hidden;
+}
+.lockTop{
+  padding:18px 16px 8px;
+  text-align:center;
+  font-family:'Press Start 2P', monospace;
+  background: var(--pink2);     /* ✅ same as popup header */
+}
+.lockTop h1{ font-size:14px; margin:6px 0 10px; }
+.lockTop p{ font-size:10px; opacity:.7; margin-bottom:10px; }
+
+.dots{
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  margin-bottom:8px;
+}
+.dot{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  border:2px solid var(--line);
+}
+.dot.filled{background:var(--pink)}
+.err{ height:16px; font-size:9px; color:#a33; }
+
+/* keypad */
+.pad{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  padding:14px;
+  border-top:2px solid var(--line);
+}
+.key{
+  padding:14px 0;
+  font-family:'Press Start 2P', monospace;
+  font-size:14px;
+  border-radius:14px;
+  border:2px solid var(--line);
+  background:var(--pink);
+  color:#fff;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms steps(2,end), filter 120ms steps(2,end);
+}
+.key:hover{ filter: brightness(1.03); }
+.key:active{ transform: translateY(2px) scale(.985); filter: brightness(.98); }
+.key.alt{ background:#f7f7f7; color:#222; font-size:9px; }
+.spacer{visibility:hidden}
+
+/* ---------- POPUP ---------- */
+.popup{
+  background:#fff;
+  border-radius:20px;
+  border:2px solid var(--line);
+  overflow:hidden;
+  width:360px;
+  max-width:92vw;
+  position:relative;
+  box-shadow:
+    14px 14px 0 rgba(242,169,199,.55),
+    0 0 0 6px rgba(242,169,199,.10);
+}
+.popupHeader{
+  background:var(--pink2);
+  padding:14px;
+  text-align:center;
+  font-family:'Press Start 2P', monospace;
+  font-size:14px;
+  position:relative;
+  z-index:2;
+}
+
+/* window dots */
+.windowDots{
+  position:absolute;
+  left:12px;
+  top:12px;
+  display:flex;
+  gap:6px;
+  z-index:3;
+}
+.windowDots span{
+  width:10px; height:10px;
+  border-radius:50%;
+  border:2px solid var(--line);
+  background:rgba(255,255,255,.75);
+}
+.windowDots span:nth-child(1){ background:rgba(242,169,199,.60); }
+.windowDots span:nth-child(2){ background:rgba(255,255,255,.78); }
+.windowDots span:nth-child(3){ background:rgba(242,169,199,.35); }
+
+.hdrLeft{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  padding-right:44px;
+  position:relative;
+  z-index:3;
+}
+.dayTracker{
+  font-family:'Press Start 2P', monospace;
+  font-size:8px;
+  line-height:1.35;
+  padding:6px 8px;
+  border-radius:999px;
+  border:2px solid var(--line);
+  background:rgba(255,255,255,.90);
+  color:#222;
+  max-width:260px;
+  text-align:center;
+  white-space:normal;
+  letter-spacing:.2px;
+}
+
+/* music button */
+.musicBtn{
+  position:absolute;
+  right:10px;
+  top:10px;
+  width:34px;
+  height:26px;
+  border-radius:10px;
+  border:2px solid var(--line);
+  background:#fff;
+  color:#222 !important;
+  font-family:'Press Start 2P', monospace;
+  font-size:10px;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  -webkit-appearance:none;
+  appearance:none;
+  padding:0;
+  z-index:6;
+  -webkit-tap-highlight-color: transparent;
+}
+.musicBtn:active{transform:translateY(1px)}
+.musicBtn.on{ background:rgba(242,169,199,.35); }
+
+.popupBody{
+  padding:18px 16px;
+  min-height:120px;
+  font-family:'Press Start 2P', monospace;
+  font-size:10px;
+  line-height:2;
+  position:relative;
+  z-index:2;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(242,169,199,.10) 0px,
+      rgba(242,169,199,.10) 2px,
+      transparent 2px,
+      transparent 18px
+    );
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,.06);
+}
+.typing::after{
+  content:"";
+  display:inline-block;
+  width:8px;
+  height:1em;
+  background:#999;
+  margin-left:6px;
+  animation:blink .9s steps(1) infinite;
+}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- FOOTER (FIXED to match border + pink behind buttons) ---------- */
+.popupFooter{
+  display:flex;
+  gap:10px;
+  padding:12px 12px 20px;
+  position:relative;
+  z-index:2;
+
+  background: #f7c1da;
+
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.45),
+    inset 0 0 0 2px rgba(0,0,0,.10);
+
+  border-radius: 0 0 18px 18px;
+}
+
+/* buttons wrapper */
+.popupFooter button{
+  flex:1;
+  padding:0;
+  background:none;
+  border:none;
+  -webkit-appearance:none;
+  appearance:none;
+  -webkit-tap-highlight-color: transparent;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* kawaii sticker tag */
+.tag{
+  position:relative;
+  font-family:'Press Start 2P', monospace;
+  font-size:7px;
+  line-height:1.55;
+  padding:10px 12px;
+  border-radius:999px;
+
+  border:2px solid rgba(0,0,0,.16);
+  background: linear-gradient(to bottom,
+    rgba(255,255,255,.34),
+    rgba(242,169,199,.78)
+  );
+
+  color: rgba(255,255,255,.98);
+  text-shadow:
+    0 1px 0 rgba(0,0,0,.20),
+    0 2px 0 rgba(0,0,0,.08);
+
+  width:100%;
+  min-height:38px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  white-space:normal;
+
+  box-shadow:
+    0 4px 0 rgba(0,0,0,.12),
+    8px 8px 0 rgba(242,169,199,.18);
+
+  transition:
+    transform 120ms steps(2,end),
+    filter 120ms steps(2,end),
+    box-shadow 120ms steps(2,end);
+}
+.tag::before{
+  content:"";
+  position:absolute;
+  left:8px;
+  right:8px;
+  top:6px;
+  height:46%;
+  border-radius:999px;
+  background: linear-gradient(to bottom,
+    rgba(255,255,255,.62),
+    rgba(255,255,255,0)
+  );
+  pointer-events:none;
+  opacity:.70;
+}
+.popupFooter button:hover .tag{ filter: brightness(1.06); }
+.popupFooter button:active .tag{
+  transform: translateY(3px) scale(.985);
+  box-shadow:
+    0 2px 0 rgba(0,0,0,.12),
+    6px 6px 0 rgba(242,169,199,.16);
+}
+
+.hidden{display:none}
+</style>
+</head>
+
+<body>
+<canvas id="bgOrbs" aria-hidden="true"></canvas>
+
+<div class="wrap">
+
+<section class="lock" id="lock">
+  <div class="lockTop">
+    <h1>Enter Passcode</h1>
+    <p>the day we met</p>
+    <div class="dots" id="dots"></div>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div class="pad">
+    <button class="key" data-k="1" type="button">1</button>
+    <button class="key" data-k="2" type="button">2</button>
+    <button class="key" data-k="3" type="button">3</button>
+    <button class="key" data-k="4" type="button">4</button>
+    <button class="key" data-k="5" type="button">5</button>
+    <button class="key" data-k="6" type="button">6</button>
+    <button class="key" data-k="7" type="button">7</button>
+    <button class="key" data-k="8" type="button">8</button>
+    <button class="key" data-k="9" type="button">9</button>
+    <div class="spacer"></div>
+    <button class="key" data-k="0" type="button">0</button>
+    <button class="key alt" data-k="del" type="button">Del</button>
+  </div>
+</section>
+
+<section class="popup hidden" id="popup">
+  <div class="popupHeader">
+    <div class="windowDots" aria-hidden="true"><span></span><span></span><span></span></div>
+
+    <div class="hdrLeft">
+      <div>New Message</div>
+      <div class="dayTracker" id="dayTracker" aria-label="Relationship counter"></div>
+    </div>
+
+    <button class="musicBtn" id="musicBtn" type="button" aria-label="Toggle music">►</button>
+  </div>
+
+  <div class="popupBody">
+    <div id="msg"></div>
+
+    <audio id="autoPlayer" preload="auto">
+      <source src="audio/bg-music.mp3.mp3" type="audio/mpeg">
+    </audio>
+  </div>
+
+  <div class="popupFooter">
+    <button type="button" data-set="reassurance"><span class="tag">Reassurance</span></button>
+    <button type="button" data-set="what"><span class="tag">What I Love</span></button>
+    <button type="button" data-set="sweet"><span class="tag">Something<br>Sweet</span></button>
+  </div>
+</section>
+
+</div>
+
+<script>
+/* ---------- CONFIG ---------- */
+const PASS = "07242024";
+const START_DATE = "2025-08-11";
+const TZ = "Europe/London";
+
+/* pinned */
+const PINNED = `Hello, my sweet prince.
+My red string.
+I made this just for you.
+You can visit whenever you want.`;
+
+/* ---------- MESSAGE BANKS ---------- */
+const SETS = {
+  reassurance: [
+    "I don’t think you understand the depth of what you’ve done to me—the hold you have on me. I can’t look at anyone else and feel even a flicker of want. I don’t see anyone else. I could never see anyone else. It’s only you.",
+    "My heart belongs to you, and only you forever. If my future isn’t with you, I would rather be alone. There is no one else.",
+    "From the moment we met, I knew it was only a matter of time before you sunk deep beneath my bones and consumed me whole. I couldn't stop loving you even if I tried to.",
+    "I haven’t gone a day without thinking of you ever since our very first conversation.",
+    "What I have with you, I don’t want with anyone else. It will always be you. No matter where I am or where you are. It has to be you.",
+    "Not even death could keep me from loving you. I would find my way back to you— someway; somehow.",
+    "You could never be too much. I would let you rip me open and reach inside of me, if only to let you feel closer to me.",
+    "My love for you won't fade even when you upset me. I know we will fight, we will be frustrated, we will be human, but I will always choose you. No matter how complicated it gets I promise I will stay.",
+    "I am not here for the easy versions of you. I will choose you even when it’s complicated, even when it hurts, because leaving would hurt far worse. There is nothing you could show me that would make me walk away.",
+    "I didn’t love you out of loneliness. I was fine with the idea of being alone for the rest of my life. You were the only person that made me want to fall in love again.",
+    "You are the only one that I will ever want. I belong with you. You are my home.",
+    "Even if we never spoke again, what I feel for you wouldn’t ever go away. Your absence could never erase what you mean to me. I would still love you for the rest of my life.",
+    "Everything will be worth it when I’m walking around with your hand in mine someday. I think about how big your hand will feel in mine, and how safe I would feel just being by your side.",
+    "I look forward to going on hikes with you; enjoying the scenery, listening to the birds, holding your hand as we walk, touching, kissing. I imagine all of the wildlife and pretty things we’ll see together.",
+    "I look forward to mornings where the sun filters through your bedroom window, when we’re tangled up together, half-awake, close enough that I can kiss your forehead and drift back to sleep beside you.",
+    "I can’t wait until we’re in the kitchen together, laughing, stealing kisses, bumping into each other as we cook something special just for us."
+  ],
+  what: [
+    "I love your eyes, and how you’ve always looked at me like I was something worth looking at. They’re so expressive, so gentle, so kind. A pale, misty green like storm clouds hanging low over a restless sea.",
+    "I love your hair—the way those messy curls fall into your face, the way it never quite stays where you want it to. You hate it, but it’s my favorite thing in the world.",
+    "I love the way your eyes crease when you smile. It makes my chest ache, and your laugh— fuck. I love your laugh. I replay it in my head all the time.",
+    "I love how clever you are. My favorite thing to do is sit there and hear you explain things. I love listening to you talk. I could listen to you ramble forever.",
+    "I love the way you try, even when it’s hard.",
+    "You have such a big, beautiful heart. You have so much empathy, and you’re so kind and understanding, even when it’s hard to be.",
+    "I love how funny you are. You’re the funniest person I know, and you make me laugh so much. My face always hurts after we get off the phone.",
+    "I love how thoughtful you are. You are the most considerate, thoughtful person.",
+    "I love the way you care so deeply about everything and everyone.",
+    "I love your mind. The way you notice things other people miss.",
+    "I love how gentle you can be, how soft you are with me. You make me laugh when I want to cry, you make me smile when I've had a long day, and you make me feel safe when I feel scared."
+  ],
+  sweet: [
+    "I don’t remember what my thoughts sounded like before they learned your name. You are deeply woven into who I am, and I cannot imagine a life without you now.",
+    "I miss you all the time. Time feels cruel now, because it keeps reminding me that the day will end without you here. I’ll be on the phone with you, looking into your eyes, and already dreading the moment you have to go again. I wish we’d met sooner. Any version of us would’ve been enough—childhood friends, high school sweethearts, rivals turned lovers. All I know is that we were written in the stars.",
+    "I would do anything to make you stay, anything to be the one you choose to look at, to reach for, to want.",
+    "I’ve memorized your features so well I could draw you from memory.",
+    "I wish you could see yourself through my eyes, just long enough to see how amazing you are. I see every good thing in you, even when you can’t.",
+    "I want the people who broke you to watch you thrive without them. I want my love to undo them; to make up for all the love you never had.",
+    "I may not be able to change your past but I can make your future something to look forward to.",
+    "I will love you so intensely that you’ll forget how unkind people have been to you. I will do my best to take your pain and return it to you as love.",
+    "When life feels heavy, I will be there to lift the weight off of your shoulders. I’ll hold your hand and kiss your face. I want to be good for you; to be the love you need. You can rest your head on my chest. Let me hold and comfort you until you feel better again.",
+    "You are everything I have ever wanted and more. You are every hope and dream I've ever had, and no matter what, everyday we are together is the greatest day of my life.",
+    "I need to be yours. I don’t feel right any other way.",
+    "When we’re old we’ll get to look back on these moments and smile.",
+    "I see my future in you in a way I never have with anyone else.",
+    "I could love you in a way that’d make even the most devoted Christian look pathetic.",
+    "Do you understand how pathetic I am for you? I'm so desperate for even a little bit of your attention. I have never craved someone as intensely as I do you.",
+    "I'd walk through every painful part of my life again if I knew you were waiting at the end of it.",
+    "No words could ever describe how much you mean to me. You are everything to me, and no matter how much I write, it’ll never be enough to truly express it."
+  ]
+};
+
+/* time-of-day greetings ONLY on unlock, ONLY morning/night */
+const SWEET_TOD = {
+  morning: [
+    "Good morning, my sweet prince.",
+    "Good morning, love. I hope you slept okay.",
+    "Wake up, my red string. I’m here.",
+    "I wish I could pull you close before your day starts.",
+    "Morning. Be good today… or don’t."
+  ],
+  night: [
+    "Trouble sleeping, my love?",
+    "If you’re still awake, I’m here.",
+    "Come closer. Just breathe with me.",
+    "I’d hold you until you fell asleep.",
+    "It’s quiet. I like thinking of you like this."
+  ]
+};
+
+const RETURN = {
+  soon: ["Back so soon?","There you are.","Couldn’t stay away, hm?"],
+  sameDay: ["I missed you.","I’m glad you came back.","Come here."],
+  long: ["I missed you. I really did.","It’s nice to see you again, my love.","I was hoping you’d come back."]
+};
+
+/* ---------- ANNIVERSARY COPY ---------- */
+const ANNIVERSARY_MONTHLY = {
+  1:  "Happy 1 month anniversary, my love.",
+  2:  "Happy 2 month anniversary. Still you.",
+  3:  "Three months with you. I’m grateful. Happy anniversary.",
+  4:  "Happy 4 month anniversary, my red string.",
+  5:  "Five months. You feel like home. Happy anniversary.",
+  6:  "Happy 6 month anniversary, my love.",
+  7:  "Seven months with you. Still choosing you. Happy anniversary.",
+  8:  "Happy 8 month anniversary, my love.",
+  9:  "Nine months. And you still make the world softer.",
+  10: "Happy 10 month anniversary, my love.",
+  11: "Eleven months with you. I’m proud of us.",
+  12: "One year with you. I’d do it all again."
+};
+function yearlyAnniversaryText(years){
+  if(years <= 1) return "One year with you. I’d do it all again.";
+  return `Happy ${years} year anniversary, my love.`;
+}
+
+/* ---------- TIME HELPERS ---------- */
+function ukNow(){
+  return new Date(new Date().toLocaleString("en-US", { timeZone: TZ }));
+}
+function ukDateKey(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+function timeBucketUK(){
+  const h = ukNow().getHours();
+  if(h >= 5 && h <= 11) return "morning";
+  if(h >= 12 && h <= 16) return "afternoon";
+  if(h >= 17 && h <= 21) return "evening";
+  return "night";
+}
+function monthsSinceStartUK(){
+  const s = new Date(new Date(START_DATE + "T00:00:00").toLocaleString("en-US",{timeZone:TZ}));
+  const n = ukNow();
+  return (n.getFullYear()-s.getFullYear())*12 + (n.getMonth()-s.getMonth());
+}
+function yearsSinceStartUK(){
+  const s = new Date(new Date(START_DATE + "T00:00:00").toLocaleString("en-US",{timeZone:TZ}));
+  const n = ukNow();
+  let y = n.getFullYear() - s.getFullYear();
+  const annThisYear = new Date(n.getFullYear(), s.getMonth(), s.getDate());
+  if(n < annThisYear) y -= 1;
+  return Math.max(0, y);
+}
+function isYearlyAnniversaryUK(){
+  const s = new Date(new Date(START_DATE + "T00:00:00").toLocaleString("en-US",{timeZone:TZ}));
+  const n = ukNow();
+  return n.getMonth() === s.getMonth() && n.getDate() === s.getDate();
+}
+function isMonthlyAnniversaryUK(){
+  const s = new Date(new Date(START_DATE + "T00:00:00").toLocaleString("en-US",{timeZone:TZ}));
+  const n = ukNow();
+  return n.getDate() === s.getDate();
+}
+function getAnniversaryMessage(){
+  if(isYearlyAnniversaryUK()){
+    const years = yearsSinceStartUK();
+    return yearlyAnniversaryText(years);
+  }
+  if(isMonthlyAnniversaryUK()){
+    const m = Math.max(1, monthsSinceStartUK());
+    return ANNIVERSARY_MONTHLY[m] || `Happy ${m} month anniversary, my love.`;
+  }
+  return "";
+}
+
+/* ---------- TRACKER ---------- */
+function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function diffYMD(from, to){
+  let y = to.getFullYear() - from.getFullYear();
+  let m = to.getMonth() - from.getMonth();
+  let d = to.getDate() - from.getDate();
+  if(d < 0){
+    m -= 1;
+    const prevMonth = new Date(to.getFullYear(), to.getMonth(), 0);
+    d += prevMonth.getDate();
+  }
+  if(m < 0){ y -= 1; m += 12; }
+  return { y, m, d };
+}
+function updateDayTracker(){
+  const el = document.getElementById("dayTracker");
+  if(!el) return;
+  const start = startOfDay(new Date(START_DATE + "T00:00:00"));
+  const now   = startOfDay(new Date());
+  if(now < start){
+    el.textContent = `♡ 0y 0m 0d • 0 days ♡`;
+    return;
+  }
+  const {y,m,d} = diffYMD(start, now);
+  const totalDays = Math.floor((now - start) / 86400000);
+  el.textContent = `♡ ${y}y ${m}m ${d}d • ${totalDays} days ♡`;
+}
+
+/* ---------- AUDIO (iPhone fix: async resume) ---------- */
+let audioCtx=null;
+async function ensureAudio(){
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==="suspended") await audioCtx.resume();
+  return audioCtx;
+}
+function clickSound(freq=620){
+  if(!audioCtx) return;
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type="triangle";
+  o.frequency.value=freq;
+  g.gain.setValueAtTime(.03,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.07);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime+.07);
+}
+function unlockSound(){
+  clickSound(520); setTimeout(()=>clickSound(780),90);
+}
+function typeKeySound(){
+  if(!audioCtx) return;
+  const dur = 0.016;
+  const buffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * dur), audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for(let i=0;i<data.length;i++){
+    data[i] = (Math.random()*2-1) * (0.7 - (i/data.length)*0.6);
+  }
+  const src = audioCtx.createBufferSource();
+  src.buffer = buffer;
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.frequency.value = 2200;
+  filter.Q.value = 1.1;
+
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.006, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0008, audioCtx.currentTime + dur);
+
+  src.connect(filter);
+  filter.connect(g);
+  g.connect(audioCtx.destination);
+
+  src.start();
+  src.stop(audioCtx.currentTime + dur);
+}
+
+/* ---------- MUSIC ---------- */
+let unlocked = false;
+let userPausedMusic = false;
+let musicEverStarted = false;
+
+function applyMusicDefaults(){
+  const player = document.getElementById("autoPlayer");
+  if(!player) return;
+  player.volume = 0.45;
+  player.loop = true;
+}
+function tryAutoPlay(){
+  const player = document.getElementById("autoPlayer");
+  if(!player) return;
+  applyMusicDefaults();
+  player.play().then(()=>{
+    musicEverStarted = true;
+    updateMusicBtn();
+  }).catch(()=>{});
+}
+const musicBtn = document.getElementById("musicBtn");
+function updateMusicBtn(){
+  const player = document.getElementById("autoPlayer");
+  if(!player) return;
+  const playing = !player.paused;
+  musicBtn.textContent = playing ? "❚❚" : "▶︎";
+  musicBtn.classList.toggle("on", playing);
+  musicBtn.setAttribute("aria-label", playing ? "Pause music" : "Play music");
+}
+musicBtn.addEventListener("click", async (e)=>{
+  e.stopPropagation();
+  await ensureAudio();
+  const player = document.getElementById("autoPlayer");
+  if(!player) return;
+
+  if(player.paused){
+    userPausedMusic = false;
+    tryAutoPlay();
+  }else{
+    userPausedMusic = true;
+    player.pause();
+  }
+  updateMusicBtn();
+});
+document.getElementById("autoPlayer").addEventListener("play", updateMusicBtn);
+document.getElementById("autoPlayer").addEventListener("pause", updateMusicBtn);
+
+document.addEventListener("click", ()=>{
+  const player = document.getElementById("autoPlayer");
+  if(!player) return;
+  if(unlocked && !musicEverStarted && !userPausedMusic && player.paused){
+    tryAutoPlay();
+  }
+});
+
+/* ---------- TYPING (hesitation every other message) ---------- */
+let typingTimer=null;
+let messageIndex=0;
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function pickPauseIndex(text){
+  const points=[];
+  for(let i=10;i<text.length-10;i++){
+    const ch=text[i];
+    if(ch==="."||ch===","||ch==="!"||ch==="?"||ch==="…") points.push(i+1);
+  }
+  if(points.length) return points[Math.floor(Math.random()*points.length)];
+  return Math.floor(text.length*0.55);
+}
+function typeText(text){
+  const el=document.getElementById("msg");
+  el.textContent="";
+  el.classList.add("typing");
+
+  messageIndex += 1;
+  const doHesitate = (messageIndex % 2 === 0);
+  const pauseAt = doHesitate ? pickPauseIndex(text) : -1;
+  let paused=false;
+  let i=0;
+
+  clearInterval(typingTimer);
+  typingTimer=setInterval(step, 40);
+
+  function step(){
+    if(pauseAt !== -1 && !paused && i === pauseAt){
+      paused=true;
+      clearInterval(typingTimer);
+      setTimeout(()=>{ typingTimer=setInterval(step,40); }, 520);
+      return;
+    }
+
+    const ch = text[i++] || "";
+    el.textContent += ch;
+
+    if(ch && ch !== " " && ch !== "\n"){
+      if(Math.random() < 0.85) typeKeySound();
+    }
+
+    if(i>=text.length){
+      clearInterval(typingTimer);
+      el.classList.remove("typing");
+    }
+  }
+}
+
+/* ---------- RETURN MESSAGE (once per UK day) ---------- */
+function getReturnMessage(){
+  const now = Date.now();
+  const lastKey = "shyfaery_last_visit_ts_v5";
+  const shownKey = "shyfaery_return_shown_day_v5";
+
+  const last = Number(localStorage.getItem(lastKey) || 0);
+  localStorage.setItem(lastKey, String(now));
+
+  if(!last) return "";
+
+  const todayUK = ukDateKey(ukNow());
+  const shownDay = localStorage.getItem(shownKey) || "";
+
+  if(shownDay === todayUK) return "";
+
+  const mins = (now - last) / 60000;
+
+  let msg = "";
+  if(mins <= 15) msg = pick(RETURN.soon);
+  else if(mins <= 12*60) msg = pick(RETURN.sameDay);
+  else msg = pick(RETURN.long);
+
+  localStorage.setItem(shownKey, todayUK);
+  return msg;
+}
+
+/* ---------- LOCK DOTS ---------- */
+const dots=document.getElementById("dots");
+for(let i=0;i<PASS.length;i++) dots.appendChild(document.createElement("div")).className="dot";
+let entered="";
+const errEl = document.getElementById("err");
+
+function updateDots(){
+  [...dots.children].forEach((d,i)=>d.classList.toggle("filled", i < entered.length));
+}
+function resetEntry(showError=false){
+  entered="";
+  updateDots();
+  if(showError){
+    errEl.textContent = "Wrong code.";
+    setTimeout(()=>{ errEl.textContent=""; }, 900);
+  }else{
+    errEl.textContent = "";
+  }
+}
+
+/* ---------- UNLOCK FLOW ---------- */
+function showAfterUnlock(){
+  document.getElementById("lock").classList.add("hidden");
+  document.getElementById("popup").classList.remove("hidden");
+
+  updateDayTracker();
+  setInterval(updateDayTracker, 60*1000);
+
+  const ann = getAnniversaryMessage();
+  const ret = !ann ? getReturnMessage() : "";
+
+  const bucket = timeBucketUK();
+  const allowTOD = (bucket === "morning" || bucket === "night");
+  const tod = (!ann && !ret && allowTOD) ? pick(SWEET_TOD[bucket]) : "";
+
+  const first = ann || ret || tod || PINNED;
+
+  typeText(first);
+  tryAutoPlay();
+}
+
+/* ---------- MAIN CLICK HANDLER (iPhone fix: await ensureAudio) ---------- */
+document.addEventListener("click", async (e)=>{
+  await ensureAudio();
+
+  const k = e.target.closest("[data-k]");
+  const b = e.target.closest("[data-set]");
+
+  if(k){
+    clickSound();
+    const val = k.dataset.k;
+
+    if(val === "del"){
+      entered = entered.slice(0,-1);
+      updateDots();
+      errEl.textContent = "";
+      return;
+    }
+
+    if(entered.length < PASS.length){
+      entered += val;
+      updateDots();
+      errEl.textContent = "";
+    }
+
+    if(entered.length === PASS.length){
+      if(entered === PASS){
+        unlockSound();
+        unlocked = true;
+        resetEntry(false);
+        showAfterUnlock();
+      }else{
+        resetEntry(true);
+      }
+    }
+    return;
+  }
+
+  if(b && unlocked){
+    clickSound();
+    const cat = b.dataset.set;
+    const pool = SETS[cat] || SETS.reassurance;
+    typeText(pick(pool));
+  }
+});
+
+applyMusicDefaults();
+updateMusicBtn();
+
+/* ---------- BACKGROUND ORBS (subtle, iOS-safe) ---------- */
+(function(){
+  const c = document.getElementById("bgOrbs");
+  if(!c) return;
+
+  const ctx = c.getContext("2d");
+  if(!ctx) return;
+
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let w=0,h=0,dpr=1;
+  function resize(){
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    w = Math.floor(window.innerWidth * dpr);
+    h = Math.floor(window.innerHeight * dpr);
+    c.width = w; c.height = h;
+    c.style.width = window.innerWidth + "px";
+    c.style.height = window.innerHeight + "px";
+  }
+
+  function rand(a,b){ return a + Math.random()*(b-a); }
+
+  const ORB_COUNT = 7;
+  const palette = [
+    {r:255,g:255,b:255},
+    {r:242,g:169,b:199},
+    {r:255,g:210,b:235}
+  ];
+
+  const orbs = [];
+  function spawn(){
+    const col = palette[Math.floor(Math.random()*palette.length)];
+    return {
+      x: rand(0,w),
+      y: rand(0,h),
+      r: rand(46*dpr, 115*dpr),
+      vx: rand(-0.10*dpr, 0.10*dpr),
+      vy: rand(-0.06*dpr, 0.06*dpr),
+      a: rand(0.07, 0.16),
+      pulse: rand(0.0008,0.0018),
+      phase: rand(0, Math.PI*2),
+      col
+    };
+  }
+
+  function init(){
+    orbs.length = 0;
+    for(let i=0;i<ORB_COUNT;i++) orbs.push(spawn());
+  }
+
+  function drawFrame(){
+    ctx.clearRect(0,0,w,h);
+
+    for(const o of orbs){
+      o.x += o.vx; o.y += o.vy;
+
+      if(o.x < -o.r) o.x = w + o.r;
+      if(o.x > w + o.r) o.x = -o.r;
+      if(o.y < -o.r) o.y = h + o.r;
+      if(o.y > h + o.r) o.y = -o.r;
+
+      o.phase += o.pulse * (1000/40);
+      const pulse = 0.55 + 0.45*Math.sin(o.phase);
+      const alpha = o.a * pulse;
+
+      const g = ctx.createRadialGradient(o.x,o.y,0, o.x,o.y,o.r);
+      g.addColorStop(0, `rgba(${o.col.r},${o.col.g},${o.col.b},${alpha})`);
+      g.addColorStop(1, "rgba(255,255,255,0)");
+
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  resize();
+  init();
+
+  window.addEventListener("resize", ()=>{
+    resize(); init();
+    if(reduce) drawFrame();
+  }, { passive:true });
+
+  if(reduce){
+    drawFrame();
+    return;
+  }
+
+  let last=0, TARGET_DT=1000/40;
+  function step(t){
+    if(t-last < TARGET_DT){ requestAnimationFrame(step); return; }
+    last = t;
+    drawFrame();
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+})();
+</script>
+</body>
+</html>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>New Message</title>

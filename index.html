@@ -11,7 +11,7 @@
 :root{
   --pink:#f2a9c7;
   --pink2:rgba(242,169,199,.55);
-  --line: #d88ab1;
+  --line:rgba(0,0,0,.18);
   --shadow:rgba(0,0,0,.12);
 }
 
@@ -26,6 +26,7 @@ body{
   align-items:flex-start;
   padding:24px;
   overflow-y:auto;
+
   background: url("IMG_0606.jpeg") center / cover no-repeat fixed;
 }
 
@@ -45,7 +46,7 @@ body{
 .wrap{
   width:420px;
   max-width:95vw;
-  margin:220px auto 40px;
+  margin:140px auto 40px;
   position:relative;
   z-index:1;
 }
@@ -62,7 +63,6 @@ body{
   padding:18px 16px 8px;
   text-align:center;
   font-family:'Press Start 2P', monospace;
-  background: var(--pink2);
 }
 .lockTop h1{ font-size:14px; margin:6px 0 10px; }
 .lockTop p{ font-size:10px; opacity:.7; margin-bottom:10px; }
@@ -227,7 +227,7 @@ body{
 }
 @keyframes blink{50%{opacity:0}}
 
-/* ---------- FOOTER (pink behind buttons) ---------- */
+/* ---------- FOOTER (FIXED to match border + pink behind buttons) ---------- */
 .popupFooter{
   display:flex;
   gap:10px;
@@ -235,14 +235,17 @@ body{
   position:relative;
   z-index:2;
 
-  background:#f7c1da;
+  background: var(--pink);            /* ✅ pink behind buttons */
 
+  /* ✅ makes it feel "inside" the popup instead of fighting the outer border */
   box-shadow:
     inset 0 2px 0 rgba(255,255,255,.45),
     inset 0 0 0 2px rgba(0,0,0,.10);
 
-  border-radius: 0 0 18px 18px;
+  border-radius: 0 0 18px 18px;       /* ✅ match popup rounding */
 }
+
+/* buttons wrapper */
 .popupFooter button{
   flex:1;
   padding:0;
@@ -257,6 +260,7 @@ body{
   justify-content:center;
 }
 
+/* kawaii sticker tag */
 .tag{
   position:relative;
   font-family:'Press Start 2P', monospace;
@@ -393,54 +397,40 @@ You can visit whenever you want.`;
 /* ---------- MESSAGE BANKS ---------- */
 const SETS = {
   reassurance: [
-    "I don’t think you understand the depth of what you’ve done to me—the hold you have on me. I can’t look at anyone else and feel even a flicker of want. I don’t see anyone else. I could never see anyone else. It’s only you.",
-    "My heart belongs to you, and only you forever. If my future isn’t with you, I would rather be alone. There is no one else.",
-    "From the moment we met, I knew it was only a matter of time before you sunk deep beneath my bones and consumed me whole. I couldn't stop loving you even if I tried to.",
-    "I haven’t gone a day without thinking of you ever since our very first conversation.",
-    "What I have with you, I don’t want with anyone else. It will always be you. No matter where I am or where you are. It has to be you.",
-    "Not even death could keep me from loving you. I would find my way back to you— someway; somehow.",
-    "You could never be too much. I would let you rip me open and reach inside of me, if only to let you feel closer to me.",
-    "My love for you won't fade even when you upset me. I know we will fight, we will be frustrated, we will be human, but I will always choose you. No matter how complicated it gets I promise I will stay.",
-    "I am not here for the easy versions of you. I will choose you even when it’s complicated, even when it hurts, because leaving would hurt far worse. There is nothing you could show me that would make me walk away.",
-    "I didn’t love you out of loneliness. I was fine with the idea of being alone for the rest of my life. You were the only person that made me want to fall in love again.",
-    "You are the only one that I will ever want. I belong with you. You are my home.",
-    "Even if we never spoke again, what I feel for you wouldn’t ever go away. Your absence could never erase what you mean to me. I would still love you for the rest of my life.",
-    "Everything will be worth it when I’m walking around with your hand in mine someday. I think about how big your hand will feel in mine, and how safe I would feel just being by your side.",
-    "I look forward to going on hikes with you; enjoying the scenery, listening to the birds, holding your hand as we walk, touching, kissing. I imagine all of the wildlife and pretty things we’ll see together.",
-    "I look forward to mornings where the sun filters through your bedroom window, when we’re tangled up together, half-awake, close enough that I can kiss your forehead and drift back to sleep beside you.",
-    "I can’t wait until we’re in the kitchen together, laughing, stealing kisses, bumping into each other as we cook something special just for us."
+    "You’re safe here. Nothing is required of you.",
+    "You don’t have to be perfect to be loved.",
+    "I’m still here. I’m not going anywhere.",
+    "Breathe. Slow down. Come back to me.",
+    "If today feels heavy, you don’t have to carry it alone.",
+    "Start small. One thing at a time. I’ve got you.",
+    "I’m proud of you for continuing.",
+    "Come here. Let the world be quiet for a second.",
+    "You are not a burden. Not to me.",
+    "You’re allowed to have hard days."
   ],
   what: [
-    "I love your eyes, and how you’ve always looked at me like I was something worth looking at. They’re so expressive, so gentle, so kind. A pale, misty green like storm clouds hanging low over a restless sea.",
-    "I love your hair—the way those messy curls fall into your face, the way it never quite stays where you want it to. You hate it, but it’s my favorite thing in the world.",
-    "I love the way your eyes crease when you smile. It makes my chest ache, and your laugh— fuck. I love your laugh. I replay it in my head all the time.",
-    "I love how clever you are. My favorite thing to do is sit there and hear you explain things. I love listening to you talk. I could listen to you ramble forever.",
-    "I love the way you try, even when it’s hard.",
-    "You have such a big, beautiful heart. You have so much empathy, and you’re so kind and understanding, even when it’s hard to be.",
-    "I love how funny you are. You’re the funniest person I know, and you make me laugh so much. My face always hurts after we get off the phone.",
-    "I love how thoughtful you are. You are the most considerate, thoughtful person.",
-    "I love the way you care so deeply about everything and everyone.",
+    "I love how thoughtful you are.",
     "I love your mind. The way you notice things other people miss.",
-    "I love how gentle you can be, how soft you are with me. You make me laugh when I want to cry, you make me smile when I've had a long day, and you make me feel safe when I feel scared."
+    "I love how gentle you can be.",
+    "I love your laugh. It’s my favorite sound in my head.",
+    "I love the way you try, even when it’s hard.",
+    "I love your steadiness—especially on days you don’t feel steady.",
+    "I love the softness you hide.",
+    "I love you in the quiet. Especially in the quiet.",
+    "I love the way you care so deeply.",
+    "I love how you keep showing up."
   ],
   sweet: [
-    "I don’t remember what my thoughts sounded like before they learned your name. You are deeply woven into who I am, and I cannot imagine a life without you now.",
-    "I miss you all the time. Time feels cruel now, because it keeps reminding me that the day will end without you here. I’ll be on the phone with you, looking into your eyes, and already dreading the moment you have to go again. I wish we’d met sooner. Any version of us would’ve been enough—childhood friends, high school sweethearts, rivals turned lovers. All I know is that we were written in the stars.",
-    "I would do anything to make you stay, anything to be the one you choose to look at, to reach for, to want.",
-    "I’ve memorized your features so well I could draw you from memory.",
-    "I wish you could see yourself through my eyes, just long enough to see how amazing you are. I see every good thing in you, even when you can’t.",
-    "I want the people who broke you to watch you thrive without them. I want my love to undo them; to make up for all the love you never had.",
-    "I may not be able to change your past but I can make your future something to look forward to.",
-    "I will love you so intensely that you’ll forget how unkind people have been to you. I will do my best to take your pain and return it to you as love.",
-    "When life feels heavy, I will be there to lift the weight off of your shoulders. I’ll hold your hand and kiss your face. I want to be good for you; to be the love you need. You can rest your head on my chest. Let me hold and comfort you until you feel better again.",
-    "You are everything I have ever wanted and more. You are every hope and dream I've ever had, and no matter what, everyday we are together is the greatest day of my life.",
-    "I need to be yours. I don’t feel right any other way.",
-    "When we’re old we’ll get to look back on these moments and smile.",
-    "I see my future in you in a way I never have with anyone else.",
-    "I could love you in a way that’d make even the most devoted Christian look pathetic.",
-    "Do you understand how pathetic I am for you? I'm so desperate for even a little bit of your attention. I have never craved someone as intensely as I do you.",
-    "I'd walk through every painful part of my life again if I knew you were waiting at the end of it.",
-    "No words could ever describe how much you mean to me. You are everything to me, and no matter how much I write, it’ll never be enough to truly express it."
+    "Come here. Just for a second.",
+    "I want to be close to you. Even like this.",
+    "I’m thinking about you again. Like I ever stop.",
+    "You feel like calm in my hands.",
+    "I’d steal you away for five quiet minutes.",
+    "I like the idea of your head on my shoulder.",
+    "If I could, I’d kiss your forehead and make the world softer.",
+    "You’re my favorite place to land.",
+    "I hope you know how loved you are.",
+    "I want you. Softly. Completely."
   ]
 };
 
@@ -568,18 +558,12 @@ function updateDayTracker(){
   el.textContent = `♡ ${y}y ${m}m ${d}d • ${totalDays} days ♡`;
 }
 
-/* ---------- AUDIO (button SFX + typing SFX) ---------- */
+/* ---------- AUDIO ---------- */
 let audioCtx=null;
-
 function ensureAudio(){
-  try{
-    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    if(audioCtx.state==="suspended"){
-      audioCtx.resume().catch(()=>{});
-    }
-  }catch(e){}
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==="suspended") audioCtx.resume();
 }
-
 function clickSound(freq=620){
   if(!audioCtx) return;
   const o=audioCtx.createOscillator(), g=audioCtx.createGain();
@@ -621,15 +605,6 @@ function typeKeySound(){
   src.stop(audioCtx.currentTime + dur);
 }
 
-/* iPhone: unlock audio on first touch */
-function oneTimeAudioUnlock(){
-  ensureAudio();
-  document.removeEventListener("pointerdown", oneTimeAudioUnlock, true);
-  document.removeEventListener("touchstart", oneTimeAudioUnlock, true);
-}
-document.addEventListener("pointerdown", oneTimeAudioUnlock, true);
-document.addEventListener("touchstart", oneTimeAudioUnlock, { passive:true, capture:true });
-
 /* ---------- MUSIC ---------- */
 let unlocked = false;
 let userPausedMusic = false;
@@ -659,15 +634,11 @@ function updateMusicBtn(){
   musicBtn.classList.toggle("on", playing);
   musicBtn.setAttribute("aria-label", playing ? "Pause music" : "Play music");
 }
-musicBtn.addEventListener("pointerdown",(e)=>{
-  e.preventDefault();
+musicBtn.addEventListener("click",(e)=>{
   e.stopPropagation();
   ensureAudio();
-
   const player = document.getElementById("autoPlayer");
   if(!player) return;
-
-  clickSound(680);
 
   if(player.paused){
     userPausedMusic = false;
@@ -689,7 +660,7 @@ document.addEventListener("click", ()=>{
   }
 });
 
-/* ---------- TYPING (text + typing sound) ---------- */
+/* ---------- TYPING (hesitation every other message) ---------- */
 let typingTimer=null;
 let messageIndex=0;
 function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
@@ -806,38 +777,15 @@ function showAfterUnlock(){
   tryAutoPlay();
 }
 
-/* ---------- INPUT HANDLERS (pointerdown for iPhone sound reliability) ---------- */
-/* prevent double-trigger (pointerdown + click) */
-let lastTapTs = 0;
-function shouldIgnoreClick(){
-  const now = Date.now();
-  if(now - lastTapTs < 350) return true;
-  return false;
-}
-
-document.addEventListener("pointerdown",(e)=>{
-  const k = e.target.closest("[data-k]");
-  const b = e.target.closest("[data-set]");
-  if(!k && !b) return;
-
-  lastTapTs = Date.now();
-  ensureAudio();
-  clickSound(); /* button SFX */
-}, { passive:true });
-
+/* ---------- MAIN CLICK HANDLER ---------- */
 document.addEventListener("click",(e)=>{
-  if(shouldIgnoreClick()){
-    // click is a “ghost click” after touch/pointer on iOS sometimes
-    // we still allow real clicks on desktop
-    // (safe because pointerdown already handled it)
-  }
-
   ensureAudio();
 
   const k = e.target.closest("[data-k]");
   const b = e.target.closest("[data-set]");
 
   if(k){
+    clickSound();
     const val = k.dataset.k;
 
     if(val === "del"){
@@ -867,6 +815,7 @@ document.addEventListener("click",(e)=>{
   }
 
   if(b && unlocked){
+    clickSound();
     const cat = b.dataset.set;
     const pool = SETS[cat] || SETS.reassurance;
     typeText(pick(pool));

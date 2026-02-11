@@ -572,11 +572,15 @@ function updateDayTracker(){
   el.textContent = `♡ ${y}y ${m}m ${d}d • ${totalDays} days ♡`;
 }
 
-/* ---------- AUDIO (iPhone fix: async resume) ---------- */
+/* ---------- AUDIO (iPhone-safe: never blocks UI) ---------- */
 let audioCtx=null;
-async function ensureAudio(){
-  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-  if(audioCtx.state==="suspended") await audioCtx.resume();
+function ensureAudio(){
+  try{
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==="suspended"){
+      audioCtx.resume().catch(()=>{});
+    }
+  }catch(e){}
   return audioCtx;
 }
 function clickSound(freq=620){
@@ -649,9 +653,9 @@ function updateMusicBtn(){
   musicBtn.classList.toggle("on", playing);
   musicBtn.setAttribute("aria-label", playing ? "Pause music" : "Play music");
 }
-musicBtn.addEventListener("click", async (e)=>{
+musicBtn.addEventListener("click",(e)=>{
   e.stopPropagation();
-  await ensureAudio();
+  ensureAudio();
   const player = document.getElementById("autoPlayer");
   if(!player) return;
 
@@ -792,12 +796,13 @@ function showAfterUnlock(){
   tryAutoPlay();
 }
 
-/* ---------- MAIN CLICK HANDLER (iPhone fix: await ensureAudio) ---------- */
-document.addEventListener("click", async (e)=>{
-  await ensureAudio();
-
+/* ---------- MAIN CLICK HANDLER (iPhone-safe: never blocks) ---------- */
+document.addEventListener("click",(e)=>{
   const k = e.target.closest("[data-k]");
   const b = e.target.closest("[data-set]");
+
+  /* only try to unlock audio when it matters (and never block UI) */
+  if(k || (b && unlocked)) ensureAudio();
 
   if(k){
     clickSound();

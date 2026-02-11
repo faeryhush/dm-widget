@@ -656,7 +656,43 @@ function updateMusicBtn(){
 /* ---------- TYPING ---------- */
 let typingTimer=null;
 let messageIndex=0;
-function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function pick(arr){ 
+  return arr[Math.floor(Math.random()*arr.length)]; 
+}
+
+/* ---------- NON-REPEATING RANDOM POOLS ---------- */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getNextMessage(setName){
+  const key = `shyfaery_pool_${setName}_v1`;
+  const messages = SETS[setName];
+  if(!messages || !messages.length) return "";
+
+  let pool = [];
+  try{
+    pool = JSON.parse(localStorage.getItem(key) || "[]");
+  }catch(_){
+    pool = [];
+  }
+
+  // reset if empty, invalid, or message list changed
+  if(!Array.isArray(pool) || pool.length === 0 || pool.some(i => i >= messages.length)){
+    pool = shuffle(messages.map((_, i) => i));
+  }
+
+  const idx = pool.shift();
+  localStorage.setItem(key, JSON.stringify(pool));
+  return messages[idx];
+}
+
 function pickPauseIndex(text){
   const points=[];
   for(let i=10;i<text.length-10;i++){
@@ -830,13 +866,13 @@ document.addEventListener("pointerdown", async (e)=>{
     return;
   }
 
-  // category buttons
-  if(isSet && unlocked){
-    clickSound();
-    const cat = isSet.dataset.set;
-    const pool = SETS[cat] || SETS.reassurance;
-    typeText(pick(pool));
-  }
+// category buttons
+if(isSet && unlocked){
+  clickSound();
+  const cat = isSet.dataset.set;
+  typeText(getNextMessage(cat));
+}
+
 }, { passive:false });
 
 applyMusicDefaults();

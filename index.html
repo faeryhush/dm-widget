@@ -63,7 +63,7 @@ body{
   padding:18px 16px 8px;
   text-align:center;
   font-family:'Press Start 2P', monospace;
-  background: var(--pink2);     /* ✅ same as popup header */
+  background: var(--pink2);
 }
 .lockTop h1{ font-size:14px; margin:6px 0 10px; }
 .lockTop p{ font-size:10px; opacity:.7; margin-bottom:10px; }
@@ -228,7 +228,7 @@ body{
 }
 @keyframes blink{50%{opacity:0}}
 
-/* ---------- FOOTER (FIXED to match border + pink behind buttons) ---------- */
+/* ---------- FOOTER (pink behind buttons) ---------- */
 .popupFooter{
   display:flex;
   gap:10px;
@@ -572,8 +572,9 @@ function updateDayTracker(){
   el.textContent = `♡ ${y}y ${m}m ${d}d • ${totalDays} days ♡`;
 }
 
-/* ---------- AUDIO (iPhone-safe: never blocks UI) ---------- */
+/* ---------- AUDIO (restored working + iPhone gesture unlock) ---------- */
 let audioCtx=null;
+
 function ensureAudio(){
   try{
     if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
@@ -581,8 +582,8 @@ function ensureAudio(){
       audioCtx.resume().catch(()=>{});
     }
   }catch(e){}
-  return audioCtx;
 }
+
 function clickSound(freq=620){
   if(!audioCtx) return;
   const o=audioCtx.createOscillator(), g=audioCtx.createGain();
@@ -623,6 +624,15 @@ function typeKeySound(){
   src.start();
   src.stop(audioCtx.currentTime + dur);
 }
+
+/* iPhone: unlock audio as soon as the user touches anywhere */
+function oneTimeAudioUnlock(){
+  ensureAudio();
+  document.removeEventListener("pointerdown", oneTimeAudioUnlock, true);
+  document.removeEventListener("touchstart", oneTimeAudioUnlock, true);
+}
+document.addEventListener("pointerdown", oneTimeAudioUnlock, true);
+document.addEventListener("touchstart", oneTimeAudioUnlock, { passive:true, capture:true });
 
 /* ---------- MUSIC ---------- */
 let unlocked = false;
@@ -796,13 +806,12 @@ function showAfterUnlock(){
   tryAutoPlay();
 }
 
-/* ---------- MAIN CLICK HANDLER (iPhone-safe: never blocks) ---------- */
+/* ---------- MAIN CLICK HANDLER ---------- */
 document.addEventListener("click",(e)=>{
+  ensureAudio();
+
   const k = e.target.closest("[data-k]");
   const b = e.target.closest("[data-set]");
-
-  /* only try to unlock audio when it matters (and never block UI) */
-  if(k || (b && unlocked)) ensureAudio();
 
   if(k){
     clickSound();

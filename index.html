@@ -234,13 +234,10 @@ body{
   padding:12px 12px 20px;
   position:relative;
   z-index:2;
-
   background:#f7c1da;
-
   box-shadow:
     inset 0 2px 0 rgba(255,255,255,.45),
     inset 0 0 0 2px rgba(0,0,0,.10);
-
   border-radius: 0 0 18px 18px;
 }
 .popupFooter button{
@@ -568,20 +565,30 @@ function updateDayTracker(){
   el.textContent = `♡ ${y}y ${m}m ${d}d • ${totalDays} days ♡`;
 }
 
-/* ---------- AUDIO (button SFX + typing SFX) ---------- */
-let audioCtx=null;
+/* ---------- AUDIO (FIXED for iOS Safari) ---------- */
+let audioCtx = null;
 
-function ensureAudio(){
+async function ensureAudio(){
   try{
-    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    if(audioCtx.state==="suspended"){
-      audioCtx.resume().catch(()=>{});
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state !== "running"){
+      await audioCtx.resume();
     }
-  }catch(e){}
+    // one tiny silent tick helps some iOS builds “commit” the unlock
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    g.gain.value = 0.00001;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + 0.01);
+    return true;
+  }catch(e){
+    return false;
+  }
 }
 
 function clickSound(freq=620){
-  if(!audioCtx) return;
+  if(!audioCtx || audioCtx.state !== "running") return;
   const o=audioCtx.createOscillator(), g=audioCtx.createGain();
   o.type="triangle";
   o.frequency.value=freq;
@@ -594,7 +601,7 @@ function unlockSound(){
   clickSound(520); setTimeout(()=>clickSound(780),90);
 }
 function typeKeySound(){
-  if(!audioCtx) return;
+  if(!audioCtx || audioCtx.state !== "running") return;
   const dur = 0.016;
   const buffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * dur), audioCtx.sampleRate);
   const data = buffer.getChannelData(0);
@@ -620,15 +627,6 @@ function typeKeySound(){
   src.start();
   src.stop(audioCtx.currentTime + dur);
 }
-
-/* iPhone: unlock audio on first touch */
-function oneTimeAudioUnlock(){
-  ensureAudio();
-  document.removeEventListener("pointerdown", oneTimeAudioUnlock, true);
-  document.removeEventListener("touchstart", oneTimeAudioUnlock, true);
-}
-document.addEventListener("pointerdown", oneTimeAudioUnlock, true);
-document.addEventListener("touchstart", oneTimeAudioUnlock, { passive:true, capture:true });
 
 /* ---------- MUSIC ---------- */
 let unlocked = false;
@@ -659,37 +657,8 @@ function updateMusicBtn(){
   musicBtn.classList.toggle("on", playing);
   musicBtn.setAttribute("aria-label", playing ? "Pause music" : "Play music");
 }
-musicBtn.addEventListener("pointerdown",(e)=>{
-  e.preventDefault();
-  e.stopPropagation();
-  ensureAudio();
 
-  const player = document.getElementById("autoPlayer");
-  if(!player) return;
-
-  clickSound(680);
-
-  if(player.paused){
-    userPausedMusic = false;
-    tryAutoPlay();
-  }else{
-    userPausedMusic = true;
-    player.pause();
-  }
-  updateMusicBtn();
-});
-document.getElementById("autoPlayer").addEventListener("play", updateMusicBtn);
-document.getElementById("autoPlayer").addEventListener("pause", updateMusicBtn);
-
-document.addEventListener("click", ()=>{
-  const player = document.getElementById("autoPlayer");
-  if(!player) return;
-  if(unlocked && !musicEverStarted && !userPausedMusic && player.paused){
-    tryAutoPlay();
-  }
-});
-
-/* ---------- TYPING (text + typing sound) ---------- */
+/* ---------- TYPING ---------- */
 let typingTimer=null;
 let messageIndex=0;
 function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
@@ -806,39 +775,39 @@ function showAfterUnlock(){
   tryAutoPlay();
 }
 
-/* ---------- INPUT HANDLERS (pointerdown for iPhone sound reliability) ---------- */
-/* prevent double-trigger (pointerdown + click) */
-let lastTapTs = 0;
-function shouldIgnoreClick(){
-  const now = Date.now();
-  if(now - lastTapTs < 350) return true;
-  return false;
-}
+/* ---------- INPUT (ALL ACTIONS on pointerdown = iOS sound-safe) ---------- */
+document.addEventListener("pointerdown", async (e)=>{
+  const isKey = e.target.closest("[data-k]");
+  const isSet = e.target.closest("[data-set]");
+  const isMusic = e.target.closest("#musicBtn");
 
-document.addEventListener("pointerdown",(e)=>{
-  const k = e.target.closest("[data-k]");
-  const b = e.target.closest("[data-set]");
-  if(!k && !b) return;
+  if(!isKey && !isSet && !isMusic) return;
 
-  lastTapTs = Date.now();
-  ensureAudio();
-  clickSound(); /* button SFX */
-}, { passive:true });
+  e.preventDefault(); // stops iOS “ghost click” weirdness
+  e.stopPropagation();
 
-document.addEventListener("click",(e)=>{
-  if(shouldIgnoreClick()){
-    // click is a “ghost click” after touch/pointer on iOS sometimes
-    // we still allow real clicks on desktop
-    // (safe because pointerdown already handled it)
+  await ensureAudio();
+
+  if(isMusic){
+    clickSound(680);
+    const player = document.getElementById("autoPlayer");
+    if(!player) return;
+
+    if(player.paused){
+      userPausedMusic = false;
+      tryAutoPlay();
+    }else{
+      userPausedMusic = true;
+      player.pause();
+    }
+    updateMusicBtn();
+    return;
   }
 
-  ensureAudio();
-
-  const k = e.target.closest("[data-k]");
-  const b = e.target.closest("[data-set]");
-
-  if(k){
-    const val = k.dataset.k;
+  // keypad
+  if(isKey){
+    clickSound();
+    const val = isKey.dataset.k;
 
     if(val === "del"){
       entered = entered.slice(0,-1);
@@ -866,12 +835,14 @@ document.addEventListener("click",(e)=>{
     return;
   }
 
-  if(b && unlocked){
-    const cat = b.dataset.set;
+  // category buttons
+  if(isSet && unlocked){
+    clickSound();
+    const cat = isSet.dataset.set;
     const pool = SETS[cat] || SETS.reassurance;
     typeText(pick(pool));
   }
-});
+}, { passive:false });
 
 applyMusicDefaults();
 updateMusicBtn();
